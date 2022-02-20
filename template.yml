@@ -1,0 +1,354 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ioquake3 server on port 27960
+Parameters:
+  AmiAlias:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-arm64-ebs
+    Description: >-
+      The actual AMI id ami-xxxxx will be dereferenced based on this alias.
+      Default is "Amazon Linux 2 minimal HVM"
+  VpcId:
+    Type: 'AWS::EC2::VPC::Id'
+    Description: >-
+      VpcId of your Virtual Private Cloud.  You probably just have one default
+      VPC.  Choose it here.
+    ConstraintDescription: Must be the VPC Id of an existing Virtual Private Cloud.
+  Subnets:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Description: Choose a subnet for the NZB instance.
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: >-
+      Choose a Key Pair for this instance.  If you do not have one, go make one
+      in the EC2 section and it will appear here.
+  BucketName:
+    Type: 'String'
+    Description: >-
+      Bucket to hold all the pak files etc. Put region in the name, as a reminder
+      that cross region transfer costs do apply so a bucket per region is most
+      cost effective.
+  ServerName:
+    Type: 'String'
+    Description: >-
+      What shows up in the quake console. An integer will be append to this.
+  ServerPassword:
+    Type: 'String'
+    Description: >-
+      Password to gain entry to the server.
+  RconPassword:
+    Type: 'String'
+    Description: >-
+      Password to access server using RCON
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: >-
+        Security Group that allows access to SSH connections and the quake3 server
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp:  0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 27960
+          ToPort: 27962
+          CidrIp:  0.0.0.0/0
+  ElasticIp:
+    Type: AWS::EC2::EIP
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Path: /
+      Roles: 
+       - !Ref Ec2InstanceRole
+  Ec2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+  InstanceS3Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${BucketName}-list-and-get-objects
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:ListBucket
+            Resource:
+              - !Sub arn:aws:s3:::${BucketName}/*
+              - !Sub arn:aws:s3:::${BucketName}
+      Roles:
+        -
+          !Ref Ec2InstanceRole
+  InstanceEIpPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: allocate-elastic-ips
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - ec2:DescribeAddresses
+              - ec2:AllocateAddress
+              - ec2:DescribeInstances
+              - ec2:AssociateAddress
+            Resource: '*'
+      Roles:
+        -
+          !Ref Ec2InstanceRole
+  AutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier: !Ref Subnets
+      DesiredCapacity: 0
+      MinSize: 0
+      MaxSize: 1
+      MixedInstancesPolicy:
+        InstancesDistribution:
+          OnDemandBaseCapacity: 0
+          OnDemandPercentageAboveBaseCapacity: 0
+          SpotAllocationStrategy: lowest-price
+          # This allows up to 6 instance types across 3 AZs (3*6=18)
+          SpotInstancePools: 20
+        LaunchTemplate:
+          LaunchTemplateSpecification: 
+            LaunchTemplateId: !Ref LaunchTemplate
+            Version: !GetAtt LaunchTemplate.LatestVersionNumber
+          Overrides:
+            - InstanceType: t4g.nano
+            - InstanceType: t4g.micro
+      Tags:
+        - Key: Name
+          Value: Quake3Quest
+          PropagateAtLaunch: "true"
+  LaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files :
+            /home/ec2-user/README.md:
+              content: !Sub |
+                Hello world!
+                commands
+                - sudo service quake30 status
+                - icecon 127.0.0.1:27960 "${RconPassword}"
+                config file6
+                - /usr/lib/ioquake3/baseq3/autoexec.cfg
+                - /usr/lib/ioquake3/baseq3/server.cfg 
+                - /usr/lib/ioquake3/baseq3/ctf.cfg
+                remote rcon
+                - quake3-rcon 13.38.149.128 "${RconPassword}"
+                server admin via rcon
+                - status
+                - addbot sarge [1-5] //that last number is the skill level. examples: doom, bones, slash, orbb, major, hunter bitterman, keel
+                - kick 2 //see status for number for each player
+                - kickbots //kicks all bots
+                - vstr d1 //begin map rotation starting with d1 to d19
+                - map q3dm17
+                - map_restart
+                - timelimit 5
+                - fraglimit 20
+                - set bot_minplayers [1-n] //fills gamer list up to this number with bots
+                List of maps
+                - http://www.bosskey.net/q3a/maps/standard.html
+                ioquake3-server package files
+                - https://packages.ubuntu.com/focal/amd64/ioquake3-server/filelist
+                Official ioquake3 admin guide
+                - https://ioquake3.org/help/sys-admin-guide/#rcon
+                Based on
+                - https://github.com/MarioVilas/ioquake3-server-docker
+                - https://hub.docker.com/r/jberrenberg/quake3
+            /opt/ioquake3/baseq3/autoexec.cfg:
+              content: !Sub |
+                // This script is automatically run when the server starts.
+                // I tried moving the entire config here but it does not work.
+                // I believe only the most basic settings can be specified here,
+                // since this is run before all of the engine is loaded...
+                
+                // You generally do not need to change these.
+                set vm_game 2
+                set vm_cgame 2
+                set vm_ui 2
+                seta rate "12400"
+                seta snaps "40"
+                seta cl_packetdup "1"
+                
+                // These you will probably change.
+                set dedicated 2         // 1: dedicated server, but not announced
+                                        // 2: dedicated server, announced
+                set com_hunkmegs 64    // maximum RAM used by the server
+                //set net_ip 0.0.0.0      // interface to bind to (defaults to all)
+                // passed as argument to server:
+                //set net_port 27960      // network port (defaults to 27960)
+            /opt/ioquake3/baseq3/server.cfg:
+              content: !Sub |
+                // General server information.
+                // passed as argument to server:
+                //set sv_hostname "[Q3Quest]"         // name that appears in the server list
+                set g_motd "Enter the Slaughter-Verse!"              // message that appears when connecting
+                //password stuff
+                sets g_needpass 1 
+                sets g_password ${ServerPassword}
+                set sv_privatePassword ""           // password to enter the server
+                set rconpassword "${RconPassword}"         // password for remote console
+                set sv_maxclients 8                // max. number of clients than can connect
+                set sv_pure 0                       // 1: pure server, no altered pk3 files
+                set g_allowvote 1                   // allow players to vote for map changes
+                
+                // Extra maps download. This needs to be enabled in the client too.
+                // See: https://openarena.fandom.com/wiki/Manual/Automatic_downloading
+                set sv_allowDownload 0              // enables downloading maps from server
+                
+                // Game mode and limits.
+                set g_gametype 0                    //  0       Free for all
+                
+                set timelimit 0                    // time limit in minutes for all modes (0 for no limit)
+                set fraglimit 20                    // frag limit for all modes (0 for no limit)
+                set capturelimit 8                  // capture limit for CTF mode (0 for no limit)
+                set g_teamAutoJoin 1                // 0:goes into spectator mode, 1:auto joins a team
+                set g_teamForceBalance 1            // 0:free selection, 1:forces player to join weak team
+                set g_friendlyFire 1                // 1: friendly fire allowed in CTF mode
+                
+                // Weapon settings.
+                set g_weaponrespawn 5               // weapon respawn in seconds
+                set g_inactivity 120                // kick players after being inactive (in seconds)
+                set g_forcerespawn 0                // 0:player has to press primary button to respawn
+                set g_log server.log                // log file name
+                set logfile 0                       // 0:off 1:buffered 2:continuous 3:append to existing
+                
+                // Bots settings.
+                set bot_enable 1                    // allow bots on the server
+                set bot_nochat 1                    // 1: disable bot chatting (recommended!)
+                set g_spskill 4                     // default skill of bots [1-5]
+                set bot_minplayers 0                // fills the server with bots to satisfy the minimum
+                
+                // Quest test
+                set d1 "map q3dm6 ; set nextmap vstr d2"
+                set d2 "map q3dm7 ; set nextmap vstr d3"
+                set d3 "map q3dm8 ; set nextmap vstr d4"
+                set d4 "map q3dm12 ; set nextmap vstr d5"
+                set d5 "map q3dm13 ; set nextmap vstr d6"
+                set d6 "map q3dm14 ; set nextmap vstr d7"
+                set d7 "map q3dm15 ; set nextmap vstr d8"
+                set d8 "map q3dm17 ; set nextmap vstr d1"
+                
+                // Don't forget to load a map, or the server won't really start...
+                vstr d1
+            /opt/ioquake3/baseq3/ctf.cfg:
+              content: !Sub |
+                set c1 "map q3ctf1 ; set nextmap vstr c2"
+                set c2 "map q3ctf2 ; set nextmap vstr c3"
+                set c3 "map q3ctf4 ; set nextmap vstr c1"
+                set g_gametype 4
+                vstr c1
+            /run/systemd/system/quake30.service:
+              content: !Sub |
+                [Unit]
+                Description=Quake30
+                After=network.target
+                
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server.cfg +set sv_hostname "${ServerName}0" +set net_port 27960
+                KillMode=process
+                Restart=on-failure
+                
+                [Install]
+                WantedBy=multi-user.target
+            /run/systemd/system/quake31.service:
+              content: !Sub |
+                [Unit]
+                Description=Quake31
+                After=network.target
+                
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server.cfg +set sv_hostname "${ServerName}1" +set net_port 27961
+                KillMode=process
+                Restart=on-failure
+                
+                [Install]
+                WantedBy=multi-user.target
+            /run/systemd/system/quake32.service:
+              content: !Sub |
+                [Unit]
+                Description=Quake32
+                After=network.target
+                
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server.cfg +set sv_hostname "${ServerName}2" +set net_port 27962
+                KillMode=process
+                Restart=on-failure
+                
+                [Install]
+                WantedBy=multi-user.target
+            /usr/bin/icecon:
+              source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
+              mode: '000755'
+    Properties:
+      LaunchTemplateData: 
+        KeyName: !Ref KeyName
+        IamInstanceProfile:
+          Name: !Ref InstanceProfile
+        ImageId: !Ref AmiAlias
+        SecurityGroupIds:
+          - !Ref InstanceSecurityGroup
+        # This is meant to be overridden by the ASG
+        InstanceType: t4g.nano
+        # The option below is really important! The alternative is for it to be unlimited, which might incur extra costs on top of the hourly rate.
+        CreditSpecification:
+          CpuCredits: standard 
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeType: gp3
+              VolumeSize: 4
+              DeleteOnTermination: true
+              Encrypted: false
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            yum install -y htop aws-cli aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
+
+            # Associate elastic IP manually to avoid the need for a load balancer
+            aws configure set region ${AWS::Region}
+            aws ec2 associate-address --instance-i `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
+
+            aws s3 cp s3://${BucketName}/ /opt/ioquake3/ --exclude baseq3/pak0.pk3 --only-show-errors --recursive
+            aws s3 cp s3://${BucketName}/baseq3/pak0.pk3 /opt/ioquake3/baseq3/pak0.pk3 --only-show-errors
+            chmod +x /opt/ioquake3/ioq3ded.arm64
+
+            systemctl enable --now quake30
+            systemctl enable --now quake31
+            systemctl enable --now quake32
+Outputs:
+  ElasticIp:
+    Value: !Ref ElasticIp
+    Description: The elastic IP to be associated with the instance

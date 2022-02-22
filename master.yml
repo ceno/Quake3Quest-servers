@@ -1,0 +1,197 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: dpmaster server on port 27950
+Parameters:
+  AmiAlias:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-arm64-ebs
+    Description: >-
+      The actual AMI id ami-xxxxx will be dereferenced based on this alias.
+      Default is "Amazon Linux 2 minimal HVM"
+  VpcId:
+    Type: 'AWS::EC2::VPC::Id'
+    Description: >-
+      VpcId of your Virtual Private Cloud.  You probably just have one default
+      VPC.  Choose it here.
+    ConstraintDescription: Must be the VPC Id of an existing Virtual Private Cloud.
+  Subnets:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Description: Choose a subnet for the NZB instance.
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: >-
+      Choose a Key Pair for this instance.  If you do not have one, go make one
+      in the EC2 section and it will appear here.
+  BucketName:
+    Type: 'String'
+    Description: >-
+      Bucket to hold the dpmaster binary.
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: >-
+        Security Group that allows access to SSH connections and the quake3 server
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp:  0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 27950
+          ToPort: 27950
+          CidrIp:  0.0.0.0/0
+  ElasticIp:
+    Type: AWS::EC2::EIP
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Path: /
+      Roles: 
+       - !Ref Ec2InstanceRole
+  Ec2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+  InstanceS3Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${BucketName}-list-and-get-objects
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:ListBucket
+            Resource:
+              - !Sub arn:aws:s3:::${BucketName}/*
+              - !Sub arn:aws:s3:::${BucketName}
+      Roles:
+        -
+          !Ref Ec2InstanceRole
+  InstanceEIpPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: allocate-elastic-ips
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - ec2:DescribeAddresses
+              - ec2:AllocateAddress
+              - ec2:DescribeInstances
+              - ec2:AssociateAddress
+            Resource: '*'
+      Roles:
+        -
+          !Ref Ec2InstanceRole
+  AutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier: !Ref Subnets
+      DesiredCapacity: 0
+      MinSize: 0
+      MaxSize: 1
+      MixedInstancesPolicy:
+        InstancesDistribution:
+          OnDemandBaseCapacity: 0
+          OnDemandPercentageAboveBaseCapacity: 0
+          SpotAllocationStrategy: lowest-price
+          # This allows up to 6 instance types across 3 AZs (3*6=18)
+          SpotInstancePools: 20
+        LaunchTemplate:
+          LaunchTemplateSpecification: 
+            LaunchTemplateId: !Ref LaunchTemplate
+            Version: !GetAtt LaunchTemplate.LatestVersionNumber
+          Overrides:
+            - InstanceType: t4g.nano
+      Tags:
+        - Key: Name
+          Value: Quake3Quest-Master
+          PropagateAtLaunch: "true"
+  LaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files :
+            /home/ec2-user/README.md:
+              content: !Sub |
+                Hello world!
+                https://github.com/icedream/docker-dpmaster-armhf/blob/master/Dockerfile
+                https://hub.docker.com/r/icedream/dpmaster-armhf
+                docker pull icedream/dpmaster-armhf
+            /run/systemd/system/dpmaster.service:
+              content: !Sub |
+                [Unit]
+                Description=quake3 master server, known as dpmaster
+                After=network.target
+                
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/opt/ioquake3/dpmaster.arm64 -v --game-policy accept Quake3Arena
+                KillMode=process
+                Restart=on-failure
+            /etc/systemd/journald.conf:
+              content: !Sub |
+                [Journal]
+                SystemMaxUse=50M
+    Properties:
+      LaunchTemplateData: 
+        KeyName: !Ref KeyName
+        IamInstanceProfile:
+          Name: !Ref InstanceProfile
+        ImageId: !Ref AmiAlias
+        SecurityGroupIds:
+          - !Ref InstanceSecurityGroup
+        # This is meant to be overridden by the ASG
+        InstanceType: t4g.nano
+        # The option below is really important! The alternative is for it to be unlimited, which might incur extra costs on top of the hourly rate.
+        CreditSpecification:
+          CpuCredits: standard 
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeType: gp3
+              VolumeSize: 2
+              DeleteOnTermination: true
+              Encrypted: false
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            yum install -y htop aws-cli aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
+
+            # Associate elastic IP manually to avoid the need for a load balancer
+            aws configure set region ${AWS::Region}
+            aws ec2 associate-address --instance-i `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
+
+            aws s3 cp s3://${BucketName}/dpmaster.arm64 /opt/ioquake3/dpmaster.arm64 --only-show-errors
+            chmod +x /opt/ioquake3/dpmaster.arm64
+
+            # Restart journald so it picks up the 50M limit for log size
+            systemctl restart systemd-journald
+            systemctl enable --now dpmaster
+Outputs:
+  ElasticIp:
+    Value: !Ref ElasticIp
+    Description: The elastic IP to be associated with the instance

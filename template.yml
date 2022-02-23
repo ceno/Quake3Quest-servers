@@ -15,7 +15,7 @@ Parameters:
     ConstraintDescription: Must be the VPC Id of an existing Virtual Private Cloud.
   Subnets:
     Type: 'List<AWS::EC2::Subnet::Id>'
-    Description: Choose a subnet for the NZB instance.
+    Description: Choose a subnet for the instance.
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: >-
@@ -31,10 +31,6 @@ Parameters:
     Type: 'String'
     Description: >-
       What shows up in the quake console. An integer will be append to this.
-  ServerPassword:
-    Type: 'String'
-    Description: >-
-      Password to gain entry to the server.
   RconPassword:
     Type: 'String'
     Description: >-
@@ -136,8 +132,8 @@ Resources:
             LaunchTemplateId: !Ref LaunchTemplate
             Version: !GetAtt LaunchTemplate.LatestVersionNumber
           Overrides:
-            - InstanceType: t4g.nano
             - InstanceType: t4g.micro
+            - InstanceType: t4g.small
       Tags:
         - Key: Name
           Value: Quake3Quest
@@ -150,119 +146,145 @@ Resources:
           files :
             /home/ec2-user/README.md:
               content: !Sub |
-                Hello world!
-                commands
-                - sudo service quake30 status
-                - icecon 127.0.0.1:27960 "${RconPassword}"
-                config file6
-                - /usr/lib/ioquake3/baseq3/autoexec.cfg
-                - /usr/lib/ioquake3/baseq3/server.cfg 
-                - /usr/lib/ioquake3/baseq3/ctf.cfg
-                remote rcon
-                - quake3-rcon 13.38.149.128 "${RconPassword}"
-                server admin via rcon
-                - status
-                - addbot sarge [1-5] //that last number is the skill level. examples: doom, bones, slash, orbb, major, hunter bitterman, keel
-                - kick 2 //see status for number for each player
-                - kickbots //kicks all bots
-                - vstr d1 //begin map rotation starting with d1 to d19
-                - map q3dm17
-                - map_restart
-                - timelimit 5
-                - fraglimit 20
-                - set bot_minplayers [1-n] //fills gamer list up to this number with bots
-                List of maps
+                Useful commands:
+
+                sudo less /var/log/cloud-init-output.log
+                sudo tail -f /var/log/cloud-init-output.log
+
+                systemctl status quake30
+                journalctl -f -u quake30
+
+                systemctl status quake31
+                journalctl -f -u quake31
+
+                Config files:
+                cat /usr/lib/ioquake3/baseq3/autoexec.cfg
+                cat /usr/lib/ioquake3/baseq3/server.cfg
+                cat /usr/lib/ioquake3/baseq3/ctf.cfg
+                cat /usr/lib/ioquake3/baseq3/1x1.cfg
+                cat /usr/lib/ioquake3/baseq3/demo.cfg
+
+                Local console:
+                icecon 127.0.0.1:27960 "${RconPassword}"
+
+                Remote console:
+                quake3-rcon 13.38.149.128 "${RconPassword}"
+
+                Quake rcon commands:
+                status
+                exec ctf.cfg
+                addbot sarge 4 //that last number is the skill level [1-5]. e.g. doom, bones, slash, orbb, keel
+                kick 2         //see status for number for each player
+                kickbots       //kicks all bots
+                vstr d1        //begin map rotation starting with d1 to d19
+                map q3dm17
+                map_restart
+                timelimit 5
+                fraglimit 20
+                set bot_minplayers 3 //fills gamer list up to this number with bots
+
+                Map list
                 - http://www.bosskey.net/q3a/maps/standard.html
-                ioquake3-server package files
-                - https://packages.ubuntu.com/focal/amd64/ioquake3-server/filelist
+
                 Official ioquake3 admin guide
                 - https://ioquake3.org/help/sys-admin-guide/#rcon
-                Based on
-                - https://github.com/MarioVilas/ioquake3-server-docker
-                - https://hub.docker.com/r/jberrenberg/quake3
+
+                Reference server.cfg
+                - https://github.com/MarioVilas/ioquake3-server-docker/blob/master/q3a/baseq3/server.cfg
             /opt/ioquake3/baseq3/autoexec.cfg:
               content: !Sub |
                 // This script is automatically run when the server starts.
-                // I tried moving the entire config here but it does not work.
-                // I believe only the most basic settings can be specified here,
-                // since this is run before all of the engine is loaded...
-                
-                // You generally do not need to change these.
+                // 1. Engine setings
                 set vm_game 2
                 set vm_cgame 2
                 set vm_ui 2
                 seta rate "12400"
                 seta snaps "40"
                 seta cl_packetdup "1"
+                set com_hunkmegs 256                     // maximum RAM used by the server
                 
-                // These you will probably change.
-                set dedicated 2         // 1: dedicated server, but not announced
-                                        // 2: dedicated server, announced
-                set com_hunkmegs 64    // maximum RAM used by the server
-                //set net_ip 0.0.0.0      // interface to bind to (defaults to all)
-                // passed as argument to server:
-                //set net_port 27960      // network port (defaults to 27960)
-            /opt/ioquake3/baseq3/server.cfg:
+                // 2. Server settings
+                // Note: net_port and sv_hostname are passed as arguments to the process rather than hardcoded here
+                //
+                set sv_master1 "13.36.227.32:27950"      // default is master.ioquake3.org
+                set dedicated 2                          // 1: dedicated server, but not announced | 2: dedicated server, announced
+                set sv_pure 0                            // 1: pure server, no altered pk3 files
+                set g_log server.log                     // log file name
+                set logfile 0                            // 0:off 1:buffered 2:continuous 3:append to existing
+                set sv_allowDownload 0                   // enables downloading maps from server. Requires clientside config. See https://openarena.fandom.com/wiki/Manual/Automatic_downloading
+                set rconpassword "${RconPassword}"
+                sets g_needpass 0                        // To set a password set this to 1, and uncomment the sets below
+                //sets g_password "my-password"
+                
+                // 3. Game settings (common across all modes)
+                //
+                set sv_maxclients 8                      // max. number of clients than can connect
+                set g_motd "Enter the Slaughter-Verse!"
+                set g_allowvote 1                        // allow players to vote for map changes
+                set timelimit 0                          // time limit in minutes for all modes (0 for no limit)
+                // Weapon settings
+                set g_weaponrespawn 5                    // weapon respawn in seconds
+                set g_inactivity 120                     // kick players after being inactive (in seconds)
+                set g_forcerespawn 0                     // 0:player has to press primary button to respawn
+                // Bot settings
+                set bot_enable 1                         // allow bots on the server
+                set bot_nochat 1                         // 1: disable bot chatting (recommended!)
+                set g_spskill 4                          // default skill of bots [1-5]
+                set bot_minplayers 0                     // fills the server with bots to satisfy the minimum
+            /opt/ioquake3/baseq3/standard.cfg:
               content: !Sub |
-                // General server information.
-                // passed as argument to server:
-                //set sv_hostname "[Q3Quest]"         // name that appears in the server list
-                set g_motd "Enter the Slaughter-Verse!"              // message that appears when connecting
-                //password stuff
-                sets g_needpass 1 
-                sets g_password ${ServerPassword}
-                set sv_privatePassword ""           // password to enter the server
-                set rconpassword "${RconPassword}"         // password for remote console
-                set sv_maxclients 8                // max. number of clients than can connect
-                set sv_pure 0                       // 1: pure server, no altered pk3 files
-                set g_allowvote 1                   // allow players to vote for map changes
-                
-                // Extra maps download. This needs to be enabled in the client too.
-                // See: https://openarena.fandom.com/wiki/Manual/Automatic_downloading
-                set sv_allowDownload 0              // enables downloading maps from server
-                
-                // Game mode and limits.
                 set g_gametype 0                    //  0       Free for all
-                
-                set timelimit 0                    // time limit in minutes for all modes (0 for no limit)
                 set fraglimit 20                    // frag limit for all modes (0 for no limit)
+                set d1 "map q3dm7 ; set nextmap vstr d2"
+                set d2 "map q3dm17 ; set nextmap vstr d3"
+                set d3 "map q3dm6 ; set nextmap vstr d4"
+                set d4 "map q3dm15 ; set nextmap vstr d1"
+                
+                vstr d1                             // load first map in rotation
+            /opt/ioquake3/baseq3/ctf.cfg:
+              content: !Sub |
+                set g_gametype 4                    //  0       Capture the Flag
                 set capturelimit 8                  // capture limit for CTF mode (0 for no limit)
                 set g_teamAutoJoin 1                // 0:goes into spectator mode, 1:auto joins a team
                 set g_teamForceBalance 1            // 0:free selection, 1:forces player to join weak team
                 set g_friendlyFire 1                // 1: friendly fire allowed in CTF mode
-                
-                // Weapon settings.
-                set g_weaponrespawn 5               // weapon respawn in seconds
-                set g_inactivity 120                // kick players after being inactive (in seconds)
-                set g_forcerespawn 0                // 0:player has to press primary button to respawn
-                set g_log server.log                // log file name
-                set logfile 0                       // 0:off 1:buffered 2:continuous 3:append to existing
-                
-                // Bots settings.
-                set bot_enable 1                    // allow bots on the server
-                set bot_nochat 1                    // 1: disable bot chatting (recommended!)
-                set g_spskill 4                     // default skill of bots [1-5]
-                set bot_minplayers 0                // fills the server with bots to satisfy the minimum
-                
-                // Quest test
-                set d1 "map q3dm6 ; set nextmap vstr d2"
-                set d2 "map q3dm7 ; set nextmap vstr d3"
-                set d3 "map q3dm8 ; set nextmap vstr d4"
-                set d4 "map q3dm12 ; set nextmap vstr d5"
-                set d5 "map q3dm13 ; set nextmap vstr d6"
-                set d6 "map q3dm14 ; set nextmap vstr d7"
-                set d7 "map q3dm15 ; set nextmap vstr d8"
-                set d8 "map q3dm17 ; set nextmap vstr d1"
-                
-                // Don't forget to load a map, or the server won't really start...
-                vstr d1
-            /opt/ioquake3/baseq3/ctf.cfg:
-              content: !Sub |
+
                 set c1 "map q3ctf1 ; set nextmap vstr c2"
                 set c2 "map q3ctf2 ; set nextmap vstr c3"
                 set c3 "map q3ctf4 ; set nextmap vstr c1"
-                set g_gametype 4
-                vstr c1
+                vstr c1                             // load first map in rotation
+            /opt/ioquake3/baseq3/1x1.cfg:
+              content: !Sub |
+                set g_gametype 0                    //  0       Free for all
+                set fraglimit 10
+                set d1 "map Q3DM2 ; set nextmap vstr d2"
+                set d2 "map Q3DM3 ; set nextmap vstr d3"
+                set d3 "map Q3DM4 ; set nextmap vstr d4"
+                set d4 "map Q3DM5 ; set nextmap vstr d5"
+                set d5 "map Q3TOURNEY3 ; set nextmap vstr d6"
+                set d6 "map Q3TOURNEY5 ; set nextmap vstr d7"
+                set d7 "map Q3TOURNEY6 ; set nextmap vstr d1"
+                vstr d1                             // load first map in rotation
+            /opt/ioquake3/baseq3/demo.cfg:
+              content: !Sub |
+                set g_gametype 0
+                set fraglimit 20                    // frag limit for all modes (0 for no limit)
+                set d1 "map q3dm7 ; set nextmap vstr d2"
+                set d2 "map q3dm17 ; set nextmap vstr d3"
+                set d3 "map q3tourney2 ; set nextmap vstr d1"
+                vstr d1
+            /opt/ioquake3/baseq3/varied.cfg:
+              content: !Sub |
+                set g_gametype 0
+                set fraglimit 20                    // frag limit for all modes (0 for no limit)
+                set d1 "map q3dm6 ; set nextmap vstr d2"
+                set d2 "map q3dm7 ; set nextmap vstr d3"
+                set d3 "map q3dm8 ; set nextmap vstr d4"
+                set d4 "map q3dm13 ; set nextmap vstr d5"
+                set d5 "map q3dm14 ; set nextmap vstr d6"
+                set d6 "map q3dm15 ; set nextmap vstr d7"
+                set d7 "map q3dm17 ; set nextmap vstr d1"
+                vstr d1
             /run/systemd/system/quake30.service:
               content: !Sub |
                 [Unit]
@@ -272,9 +294,11 @@ Resources:
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server.cfg +set sv_hostname "${ServerName}0" +set net_port 27960
+                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec standard.cfg +set sv_hostname "${ServerName}0" +set net_port 27960
                 KillMode=process
                 Restart=on-failure
+                StandardOutput=null
+                StandardError=null
                 
                 [Install]
                 WantedBy=multi-user.target
@@ -287,27 +311,18 @@ Resources:
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server.cfg +set sv_hostname "${ServerName}1" +set net_port 27961
+                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec standard.cfg +set sv_hostname "${ServerName}1" +set net_port 27961
                 KillMode=process
                 Restart=on-failure
+                StandardOutput=null
+                StandardError=null
                 
                 [Install]
                 WantedBy=multi-user.target
-            /run/systemd/system/quake32.service:
+            /etc/systemd/journald.conf:
               content: !Sub |
-                [Unit]
-                Description=Quake32
-                After=network.target
-                
-                [Service]
-                User=ec2-user
-                Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server.cfg +set sv_hostname "${ServerName}2" +set net_port 27962
-                KillMode=process
-                Restart=on-failure
-                
-                [Install]
-                WantedBy=multi-user.target
+                [Journal]
+                SystemMaxUse=50M
             /usr/bin/icecon:
               source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
               mode: '000755'
@@ -328,7 +343,7 @@ Resources:
           - DeviceName: /dev/xvda
             Ebs:
               VolumeType: gp3
-              VolumeSize: 4
+              VolumeSize: 3
               DeleteOnTermination: true
               Encrypted: false
         UserData:
@@ -341,13 +356,15 @@ Resources:
             aws configure set region ${AWS::Region}
             aws ec2 associate-address --instance-i `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
 
+            # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
             aws s3 cp s3://${BucketName}/ /opt/ioquake3/ --exclude baseq3/pak0.pk3 --only-show-errors --recursive
             aws s3 cp s3://${BucketName}/baseq3/pak0.pk3 /opt/ioquake3/baseq3/pak0.pk3 --only-show-errors
             chmod +x /opt/ioquake3/ioq3ded.arm64
 
+            # Restart journald so it picks up the 50M limit for log size
+            systemctl restart systemd-journald
             systemctl enable --now quake30
             systemctl enable --now quake31
-            systemctl enable --now quake32
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

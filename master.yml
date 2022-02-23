@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: dpmaster server on port 27950
+Description: ioquake3 server on port 27960
 Parameters:
   AmiAlias:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
@@ -15,21 +15,13 @@ Parameters:
     ConstraintDescription: Must be the VPC Id of an existing Virtual Private Cloud.
   Subnets:
     Type: 'List<AWS::EC2::Subnet::Id>'
-    Description: Choose a subnet for the NZB instance.
+    Description: Choose a subnet for the instance.
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: >-
       Choose a Key Pair for this instance.  If you do not have one, go make one
       in the EC2 section and it will appear here.
-  BucketName:
-    Type: 'String'
-    Description: >-
-      Bucket to hold the dpmaster binary.
 Resources:
-  S3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref BucketName
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -67,24 +59,6 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
-  InstanceS3Policy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: !Sub ${BucketName}-list-and-get-objects
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          -
-            Effect: Allow
-            Action:
-              - s3:GetObject
-              - s3:ListBucket
-            Resource:
-              - !Sub arn:aws:s3:::${BucketName}/*
-              - !Sub arn:aws:s3:::${BucketName}
-      Roles:
-        -
-          !Ref Ec2InstanceRole
   InstanceEIpPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -135,26 +109,38 @@ Resources:
           files :
             /home/ec2-user/README.md:
               content: !Sub |
-                Hello world!
-                https://github.com/icedream/docker-dpmaster-armhf/blob/master/Dockerfile
-                https://hub.docker.com/r/icedream/dpmaster-armhf
-                docker pull icedream/dpmaster-armhf
+                Useful commands:
+
+                sudo less /var/log/cloud-init-output.log
+
+                sudo tail -f /var/log/cloud-init-output.log
+
+                systemctl status dpmaster
+
+                journalctl -f -u dpmaster
+
+                cat /run/systemd/system/dpmaster.service
+
+                Pass -v to dpmaster in the service unit to enable verbose logs
             /run/systemd/system/dpmaster.service:
               content: !Sub |
                 [Unit]
-                Description=quake3 master server, known as dpmaster
+                Description=Quake3 master server, known as dpmaster
                 After=network.target
                 
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/dpmaster.arm64 -v --game-policy accept Quake3Arena
+                ExecStart=/usr/bin/dpmaster --game-policy accept Quake3Arena
                 KillMode=process
                 Restart=on-failure
             /etc/systemd/journald.conf:
               content: !Sub |
                 [Journal]
                 SystemMaxUse=50M
+            /usr/bin/dpmaster:
+              source: https://github.com/ceno/dpmaster/releases/download/v2.2/dpmaster.arm64
+              mode: '000755'
     Properties:
       LaunchTemplateData: 
         KeyName: !Ref KeyName
@@ -185,12 +171,10 @@ Resources:
             aws configure set region ${AWS::Region}
             aws ec2 associate-address --instance-i `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
 
-            aws s3 cp s3://${BucketName}/dpmaster.arm64 /opt/ioquake3/dpmaster.arm64 --only-show-errors
-            chmod +x /opt/ioquake3/dpmaster.arm64
-
             # Restart journald so it picks up the 50M limit for log size
             systemctl restart systemd-journald
             systemctl enable --now dpmaster
+
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

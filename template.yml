@@ -30,7 +30,7 @@ Parameters:
   ServerName:
     Type: 'String'
     Description: >-
-      What shows up in the quake console. An integer will be append to this.
+      What shows up in the quake console. An integer will be append to this. Example `EU-WEST-`
   RconPassword:
     Type: 'String'
     Description: >-
@@ -294,7 +294,7 @@ Resources:
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec standard.cfg +set sv_hostname "${ServerName}0" +set net_port 27960
+                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec demo.cfg +set sv_hostname "${ServerName}0" +set net_port 27960
                 KillMode=process
                 Restart=on-failure
                 StandardOutput=null
@@ -338,12 +338,12 @@ Resources:
         InstanceType: t4g.nano
         # The option below is really important! The alternative is for it to be unlimited, which might incur extra costs on top of the hourly rate.
         CreditSpecification:
-          CpuCredits: standard 
+          CpuCredits: unlimited
         BlockDeviceMappings:
           - DeviceName: /dev/xvda
             Ebs:
               VolumeType: gp3
-              VolumeSize: 3
+              VolumeSize: 2
               DeleteOnTermination: true
               Encrypted: false
         UserData:

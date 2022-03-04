@@ -27,10 +27,14 @@ Parameters:
       Bucket to hold all the pak files etc. Put region in the name, as a reminder
       that cross region transfer costs do apply so a bucket per region is most
       cost effective.
-  ServerName:
+  Server0Name:
     Type: 'String'
     Description: >-
-      What shows up in the quake console. An integer will be append to this. Example `EU-WEST-`
+      Hostname for server on port 27960. The first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
+  Server1Name:
+    Type: 'String'
+    Description: >-
+      Hostname for server on port 27961. The first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
   RconPassword:
     Type: 'String'
     Description: >-
@@ -132,8 +136,8 @@ Resources:
             LaunchTemplateId: !Ref LaunchTemplate
             Version: !GetAtt LaunchTemplate.LatestVersionNumber
           Overrides:
+            - InstanceType: t4g.nano
             - InstanceType: t4g.micro
-            - InstanceType: t4g.small
       Tags:
         - Key: Name
           Value: Quake3Quest
@@ -151,18 +155,19 @@ Resources:
                 sudo less /var/log/cloud-init-output.log
                 sudo tail -f /var/log/cloud-init-output.log
 
-                systemctl status quake30
-                journalctl -f -u quake30
-
-                systemctl status quake31
-                journalctl -f -u quake31
+                cat /run/systemd/system/quake3@.service
+                systemctl status quake3@0
+                journalctl -f -u quake3@0
 
                 Config files:
                 cat /usr/lib/ioquake3/baseq3/autoexec.cfg
-                cat /usr/lib/ioquake3/baseq3/server.cfg
+                cat /usr/lib/ioquake3/baseq3/server0.cfg
+                cat /usr/lib/ioquake3/baseq3/server1.cfg
                 cat /usr/lib/ioquake3/baseq3/ctf.cfg
                 cat /usr/lib/ioquake3/baseq3/1x1.cfg
                 cat /usr/lib/ioquake3/baseq3/demo.cfg
+                cat /usr/lib/ioquake3/baseq3/custom.cfg
+                cat /usr/lib/ioquake3/baseq3/custom2.cfg
 
                 Local console:
                 icecon 127.0.0.1:27960 "${RconPassword}"
@@ -204,14 +209,16 @@ Resources:
                 set com_hunkmegs 256                     // maximum RAM used by the server
                 
                 // 2. Server settings
-                // Note: net_port and sv_hostname are passed as arguments to the process rather than hardcoded here
+                // Note: net_port and sv_hostname are set in separate cfgs to enable multiple servers per machine
                 //
                 set sv_master1 "13.36.227.32:27950"      // default is master.ioquake3.org
                 set dedicated 2                          // 1: dedicated server, but not announced | 2: dedicated server, announced
                 set sv_pure 0                            // 1: pure server, no altered pk3 files
                 set g_log server.log                     // log file name
                 set logfile 0                            // 0:off 1:buffered 2:continuous 3:append to existing
-                set sv_allowDownload 0                   // enables downloading maps from server. Requires clientside config. See https://openarena.fandom.com/wiki/Manual/Automatic_downloading
+                set sv_allowDownload 1                   // enables downloading maps from server. Requires clientside config. See https://openarena.fandom.com/wiki/Manual/Automatic_downloading
+                set sv_dlURL ""                          // Tell clients to download pk3s from this URL instead of this server. Empty means use this server.
+                set sv_dlRate 1024                        // Maximum download rate offered to clients (kb/s)
                 set rconpassword "${RconPassword}"
                 sets g_needpass 0                        // To set a password set this to 1, and uncomment the sets below
                 //sets g_password "my-password"
@@ -231,6 +238,22 @@ Resources:
                 set bot_nochat 1                         // 1: disable bot chatting (recommended!)
                 set g_spskill 4                          // default skill of bots [1-5]
                 set bot_minplayers 0                     // fills the server with bots to satisfy the minimum
+            /opt/ioquake3/baseq3/server0.cfg:
+              content: !Sub |
+                set sv_hostname "${Server0Name}"
+                set net_port 27960
+                exec varied.cfg
+            /opt/ioquake3/baseq3/server1.cfg:
+              content: !Sub |
+                set sv_hostname "${Server1Name}"
+                set net_port 27961
+                exec demo.cfg
+            /opt/ioquake3/baseq3/stress.cfg:
+              content: !Sub |
+                // Useful config options when stress testing the server.
+                // These facilitate upping player numbers by joining from PC clients and leaving them idle
+                set g_inactivity 0                       // do not kick inactive users
+                set g_forcerespawn 1                     // auto respawn
             /opt/ioquake3/baseq3/standard.cfg:
               content: !Sub |
                 set g_gametype 0                    //  0       Free for all
@@ -285,33 +308,46 @@ Resources:
                 set d6 "map q3dm15 ; set nextmap vstr d7"
                 set d7 "map q3dm17 ; set nextmap vstr d1"
                 vstr d1
-            /run/systemd/system/quake30.service:
+            /opt/ioquake3/baseq3/custom.cfg:
+              content: !Sub |
+                set g_gametype 0
+                set fraglimit 20                    // frag limit for all modes (0 for no limit)
+                set d1 "map hub3aeroq3 ; set nextmap vstr d2"   // https://ws.q3df.org/map/hub3aeroq3/
+                set d2 "map hub3tourney1 ; set nextmap vstr d3" // https://ws.q3df.org/map/hub3tourney1/
+                set d3 "map cpm1a ; set nextmap vstr d4"        // https://ws.q3df.org/map/cpm1a
+                set d4 "map ztn3dm1 ; set nextmap vstr d5"      // https://ws.q3df.org/map/ztn3dm1/
+                set d5 "map alkdm06 ; set nextmap vstr d6"      // https://ws.q3df.org/map/alkdm06/
+                set d6 "map bal3dm3 ; set nextmap vstr d1"      // https://ws.q3df.org/map/bal3dm3/
+                vstr d1
+            /opt/ioquake3/baseq3/custom2.cfg:
+              content: !Sub |
+                set g_gametype 0
+                set fraglimit 20                    // frag limit for all modes (0 for no limit)
+                set d1 "map hub3aeroq3 ; set nextmap vstr d2"   // https://ws.q3df.org/map/hub3aeroq3/
+                set d2 "map hub3tourney1 ; set nextmap vstr d3" // https://ws.q3df.org/map/hub3tourney1/
+                set d3 "map cpm1a ; set nextmap vstr d4"        // https://ws.q3df.org/map/cpm1a
+                set d4 "map ztn3dm1 ; set nextmap vstr d5"      // https://ws.q3df.org/map/ztn3dm1/
+                set d5 "map alkdm06 ; set nextmap vstr d6"      // https://ws.q3df.org/map/alkdm06/
+                set d6 "map bal3dm3 ; set nextmap vstr d7"      // https://ws.q3df.org/map/bal3dm3/
+                set d7 "map wvwq3dm7 ; set nextmap vstr d8"     // https://ws.q3df.org/map/wvwq3dm7/
+                set d8 "map plutonians ; set nextmap vstr d9"   // https://ws.q3df.org/map/plutonians/
+                set d9 "map simetrik ; set nextmap vstr d10"    // https://ws.q3df.org/map/simetrik/
+                set d10 "map klzdeadly ; set nextmap vstr d11"  // https://ws.q3df.org/map/klzdeadly/
+                set d11 "map charon3dm8 ; set nextmap vstr d12" // https://ws.q3df.org/map/charon3dm8/
+                set d12 "map kamq3dm2 ; set nextmap vstr d13"   // https://ws.q3df.org/map/kamq3dm2/
+                set d13 "map auh3dm1; set nextmap vstr d1"      // https://ws.q3df.org/map/auh3dm1/
+                set d14 "map q3deck; set nextmap vstr d1"       // https://www.moddb.com/games/quake-iii-arena/addons/q3deck
+                vstr d1
+            /run/systemd/system/quake3@.service:
               content: !Sub |
                 [Unit]
-                Description=Quake30
+                Description=Quake3@%i
                 After=network.target
                 
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec demo.cfg +set sv_hostname "${ServerName}0" +set net_port 27960
-                KillMode=process
-                Restart=on-failure
-                StandardOutput=null
-                StandardError=null
-                
-                [Install]
-                WantedBy=multi-user.target
-            /run/systemd/system/quake31.service:
-              content: !Sub |
-                [Unit]
-                Description=Quake31
-                After=network.target
-                
-                [Service]
-                User=ec2-user
-                Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec standard.cfg +set sv_hostname "${ServerName}1" +set net_port 27961
+                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server%i.cfg
                 KillMode=process
                 Restart=on-failure
                 StandardOutput=null
@@ -349,7 +385,7 @@ Resources:
         UserData:
           Fn::Base64: !Sub |
             #!/bin/bash -xe
-            yum install -y htop aws-cli aws-cfn-bootstrap
+            yum install -y vim htop aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
 
             # Associate elastic IP manually to avoid the need for a load balancer
@@ -363,8 +399,10 @@ Resources:
 
             # Restart journald so it picks up the 50M limit for log size
             systemctl restart systemd-journald
-            systemctl enable --now quake30
-            systemctl enable --now quake31
+
+            # Start quake3 servers if a name for them has been passed in the params
+            [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0
+            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

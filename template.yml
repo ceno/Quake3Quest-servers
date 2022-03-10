@@ -24,17 +24,17 @@ Parameters:
   BucketName:
     Type: 'String'
     Description: >-
-      Bucket to hold all the pak files etc. Put region in the name, as a reminder
+      ndoBucket to hold all the pak files etc. Put region in the name, as a reminder
       that cross region transfer costs do apply so a bucket per region is most
       cost effective.
   Server0Name:
     Type: 'String'
     Description: >-
-      Hostname for server on port 27960. The first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
+      Hostname for server on port 27960. Only the first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
   Server1Name:
     Type: 'String'
     Description: >-
-      Hostname for server on port 27961. The first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
+      Hostname for server on port 27961. Only the first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
   RconPassword:
     Type: 'String'
     Description: >-
@@ -160,14 +160,14 @@ Resources:
                 journalctl -f -u quake3@0
 
                 Config files:
-                cat /usr/lib/ioquake3/baseq3/autoexec.cfg
-                cat /usr/lib/ioquake3/baseq3/server0.cfg
-                cat /usr/lib/ioquake3/baseq3/server1.cfg
-                cat /usr/lib/ioquake3/baseq3/ctf.cfg
-                cat /usr/lib/ioquake3/baseq3/1x1.cfg
-                cat /usr/lib/ioquake3/baseq3/demo.cfg
-                cat /usr/lib/ioquake3/baseq3/custom.cfg
-                cat /usr/lib/ioquake3/baseq3/custom2.cfg
+                cat /opt/ioquake3/baseq3/autoexec.cfg
+                cat /opt/ioquake3/baseq3/server0.cfg
+                cat /opt/ioquake3/baseq3/server1.cfg
+                cat /opt/ioquake3/baseq3/ctf.cfg
+                cat /opt/ioquake3/baseq3/1x1.cfg
+                cat /opt/ioquake3/baseq3/demo.cfg
+                cat /opt/ioquake3/baseq3/custom.cfg
+                cat /opt/ioquake3/baseq3/custom2.cfg
 
                 Local console:
                 icecon 127.0.0.1:27960 "${RconPassword}"
@@ -300,13 +300,17 @@ Resources:
               content: !Sub |
                 set g_gametype 0
                 set fraglimit 20                    // frag limit for all modes (0 for no limit)
-                set d1 "map q3dm6 ; set nextmap vstr d2"
-                set d2 "map q3dm7 ; set nextmap vstr d3"
-                set d3 "map q3dm8 ; set nextmap vstr d4"
-                set d4 "map q3dm13 ; set nextmap vstr d5"
-                set d5 "map q3dm14 ; set nextmap vstr d6"
-                set d6 "map q3dm15 ; set nextmap vstr d7"
-                set d7 "map q3dm17 ; set nextmap vstr d1"
+                set d1 "map q3dm4 ; set nextmap vstr d2"
+                set d2 "map q3dm5 ; set nextmap vstr d3"
+                set d3 "map q3dm6 ; set nextmap vstr d4"
+                set d4 "map q3dm7 ; set nextmap vstr d5"
+                set d5 "map q3dm8 ; set nextmap vstr d6"
+                set d6 "map q3dm9 ; set nextmap vstr d7"
+                set d7 "map q3dm13 ; set nextmap vstr d8"
+                set d8 "map q3dm14 ; set nextmap vstr d9"
+                set d9 "map q3dm15 ; set nextmap vstr d10"
+                set d10 "map q3dm16 ; set nextmap vstr d11"
+                set d11 "map q3dm17 ; set nextmap vstr d1"
                 vstr d1
             /opt/ioquake3/baseq3/custom.cfg:
               content: !Sub |
@@ -329,14 +333,19 @@ Resources:
                 set d4 "map ztn3dm1 ; set nextmap vstr d5"      // https://ws.q3df.org/map/ztn3dm1/
                 set d5 "map alkdm06 ; set nextmap vstr d6"      // https://ws.q3df.org/map/alkdm06/
                 set d6 "map bal3dm3 ; set nextmap vstr d7"      // https://ws.q3df.org/map/bal3dm3/
-                set d7 "map wvwq3dm7 ; set nextmap vstr d8"     // https://ws.q3df.org/map/wvwq3dm7/
-                set d8 "map plutonians ; set nextmap vstr d9"   // https://ws.q3df.org/map/plutonians/
-                set d9 "map simetrik ; set nextmap vstr d10"    // https://ws.q3df.org/map/simetrik/
-                set d10 "map klzdeadly ; set nextmap vstr d11"  // https://ws.q3df.org/map/klzdeadly/
-                set d11 "map charon3dm8 ; set nextmap vstr d12" // https://ws.q3df.org/map/charon3dm8/
-                set d12 "map kamq3dm2 ; set nextmap vstr d13"   // https://ws.q3df.org/map/kamq3dm2/
-                set d13 "map auh3dm1; set nextmap vstr d1"      // https://ws.q3df.org/map/auh3dm1/
-                set d14 "map q3deck; set nextmap vstr d1"       // https://www.moddb.com/games/quake-iii-arena/addons/q3deck
+                set d7 "map plutonians ; set nextmap vstr d8"   // https://ws.q3df.org/map/plutonians/
+                set d8 "map simetrik ; set nextmap vstr d9"     // https://ws.q3df.org/map/simetrik/
+                set d9 "map klzdeadly ; set nextmap vstr d10"   // https://ws.q3df.org/map/klzdeadly/
+                set d10 "map charon3dm8 ; set nextmap vstr d11" // https://ws.q3df.org/map/charon3dm8/
+                set d11 "map auh3dm1; set nextmap vstr d12"     // https://ws.q3df.org/map/auh3dm1/
+                set d12 "map simple-dm6; set nextmap vstr d13"    // https://lvlworld.com/download/id:2309
+                set d13 "map lun3_20b1; set nextmap vstr d14"     // https://ws.q3df.org/map/lun3_20b1/
+                set d14 "map mksteel; set nextmap vstr d15"       // https://ws.q3df.org/map/mksteel/
+                set d15 "map akutatourney6; set nextmap vstr d16" // https://ws.q3df.org/map/akutatourney6/
+                set d16 "map akutatourney8; set nextmap vstr d17" // https://lvlworld.com/media/id:2362
+                set d17 "map akutadm1; set nextmap vstr d18"      // https://ws.q3df.org/map/akutadm1/
+                set d18 "map akutadm2; set nextmap vstr d19"      // https://ws.q3df.org/map/akutadm2/
+                set d19 "map akutadm3; set nextmap vstr d1"       // https://ws.q3df.org/map/akutadm3/
                 vstr d1
             /run/systemd/system/quake3@.service:
               content: !Sub |

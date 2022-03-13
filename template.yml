@@ -24,15 +24,17 @@ Parameters:
   BucketName:
     Type: 'String'
     Description: >-
-      ndoBucket to hold all the pak files etc. Put region in the name, as a reminder
+      Bucket to hold all the pak files etc. Put region in the name, as a reminder
       that cross region transfer costs do apply so a bucket per region is most
       cost effective.
   Server0Name:
     Type: 'String'
+    Default: 'AU - DEMO'
     Description: >-
       Hostname for server on port 27960. Only the first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
   Server1Name:
     Type: 'String'
+    Default: 'AU - FULL GAME'
     Description: >-
       Hostname for server on port 27961. Only the first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
   RconPassword:
@@ -117,6 +119,47 @@ Resources:
       Roles:
         -
           !Ref Ec2InstanceRole
+
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+        - Key: Name
+          Value: Quake3Quest
+  FileSystemSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that allows NFS access from the teamcity server
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref InstanceSecurityGroup
+  FileSystemMountTarget0:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SecurityGroups:
+        - !Ref FileSystemSecurityGroup
+      SubnetId: !Select [0, Ref: Subnets]
+  FileSystemMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SecurityGroups:
+        - !Ref FileSystemSecurityGroup
+      SubnetId: !Select [1, Ref: Subnets]
+  FileSystemMountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SecurityGroups:
+        - !Ref FileSystemSecurityGroup
+      SubnetId: !Select [2, Ref: Subnets]
+
   AutoScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
@@ -168,6 +211,7 @@ Resources:
                 cat /opt/ioquake3/baseq3/demo.cfg
                 cat /opt/ioquake3/baseq3/custom.cfg
                 cat /opt/ioquake3/baseq3/custom2.cfg
+                cat /opt/ioquake3/baseq3/custom3.cfg
 
                 Local console:
                 icecon 127.0.0.1:27960 "${RconPassword}"
@@ -325,6 +369,7 @@ Resources:
                 vstr d1
             /opt/ioquake3/baseq3/custom2.cfg:
               content: !Sub |
+                // Custom set of maps for experimentation
                 set g_gametype 0
                 set fraglimit 20                    // frag limit for all modes (0 for no limit)
                 set d1 "map hub3aeroq3 ; set nextmap vstr d2"   // https://ws.q3df.org/map/hub3aeroq3/
@@ -333,34 +378,104 @@ Resources:
                 set d4 "map ztn3dm1 ; set nextmap vstr d5"      // https://ws.q3df.org/map/ztn3dm1/
                 set d5 "map alkdm06 ; set nextmap vstr d6"      // https://ws.q3df.org/map/alkdm06/
                 set d6 "map bal3dm3 ; set nextmap vstr d7"      // https://ws.q3df.org/map/bal3dm3/
-                set d7 "map plutonians ; set nextmap vstr d8"   // https://ws.q3df.org/map/plutonians/
-                set d8 "map simetrik ; set nextmap vstr d9"     // https://ws.q3df.org/map/simetrik/
-                set d9 "map klzdeadly ; set nextmap vstr d10"   // https://ws.q3df.org/map/klzdeadly/
-                set d10 "map charon3dm8 ; set nextmap vstr d11" // https://ws.q3df.org/map/charon3dm8/
-                set d11 "map auh3dm1; set nextmap vstr d12"     // https://ws.q3df.org/map/auh3dm1/
-                set d12 "map simple-dm6; set nextmap vstr d13"    // https://lvlworld.com/download/id:2309
-                set d13 "map lun3_20b1; set nextmap vstr d14"     // https://ws.q3df.org/map/lun3_20b1/
-                set d14 "map mksteel; set nextmap vstr d15"       // https://ws.q3df.org/map/mksteel/
-                set d15 "map akutatourney6; set nextmap vstr d16" // https://ws.q3df.org/map/akutatourney6/
-                set d16 "map akutatourney8; set nextmap vstr d17" // https://lvlworld.com/media/id:2362
-                set d17 "map akutadm1; set nextmap vstr d18"      // https://ws.q3df.org/map/akutadm1/
-                set d18 "map akutadm2; set nextmap vstr d19"      // https://ws.q3df.org/map/akutadm2/
-                set d19 "map akutadm3; set nextmap vstr d1"       // https://ws.q3df.org/map/akutadm3/
+                set d7 "map simetrik ; set nextmap vstr d8"     // https://ws.q3df.org/map/simetrik/
+                set d8 "map klzdeadly ; set nextmap vstr d9"   // https://ws.q3df.org/map/klzdeadly/
+                set d9 "map charon3dm8 ; set nextmap vstr d10" // https://ws.q3df.org/map/charon3dm8/
+                set d10 "map auh3dm1; set nextmap vstr d11"     // https://ws.q3df.org/map/auh3dm1/
+                set d11 "map mksteel; set nextmap vstr d12"       // https://ws.q3df.org/map/mksteel/
+                set d12 "map akutatourney6; set nextmap vstr d13" // https://ws.q3df.org/map/akutatourney6/
+                set d13 "map akutatourney8; set nextmap vstr d14" // https://lvlworld.com/media/id:2362
+                set d14 "map akutadm1; set nextmap vstr d15"      // https://ws.q3df.org/map/akutadm1/
+                set d15 "map akutadm2; set nextmap vstr d16"      // https://ws.q3df.org/map/akutadm2/
+                set d16 "map akutadm3; set nextmap vstr d17"      // https://ws.q3df.org/map/akutadm3/
+                set d17 "map charonq2dm1v2; set nextmap vstr d18" // https://ws.q3df.org/map/charonq2dm1v2/
+                set d18 "map tabd2map01; set nextmap vstr d1"     // https://ws.q3df.org/map/tabd2map01/
+                vstr d1
+            /opt/ioquake3/baseq3/custom3.cfg:
+              content: !Sub |
+                // 'LvL Pack - The cream off the top' from https://lvlworld.com/review/id:664
+                set g_gametype 0
+                set fraglimit 20
+                set d1 "map natedm2 ; set nextmap vstr d2"       // https://lvlworld.com/review/id:482
+                set d2 "map ik3dm1 ; set nextmap vstr d3"        // https://lvlworld.com/review/id:20
+                set d3 "map JAPANDM ; set nextmap vstr d4"       // https://lvlworld.com/review/id:44
+                set d4 "map mrcq3t3 ; set nextmap vstr d5"       // https://lvlworld.com/review/id:428
+                set d5 "map ztn3dm2 ; set nextmap vstr d6"       // https://lvlworld.com/review/id:107
+                set d6 "map lun3dm2 ; set nextmap vstr d7"       // https://lvlworld.com/review/id:423
+                set d6 "map bal3dm2 ; set nextmap vstr d7"       // https://lvlworld.com/review/id:429
+                set d7 "map ztn3dm1 ; set nextmap vstr d8"       // https://lvlworld.com/review/id:203
+                set d8 "map auh3dm2 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:501
+                set d9 "map shortcircuit ; set nextmap vstr d10" // https://lvlworld.com/review/id:494
+                set d10 "map cpm8 ; set nextmap vstr d11"        // https://lvlworld.com/review/id:525
+                set d11 "map auh3dm1 ; set nextmap vstr d12"     // https://lvlworld.com/review/id:614
+                set d12 "map fff ; set nextmap vstr d13"         // https://lvlworld.com/review/id:551
+                set d13 "map devdm3 ; set nextmap vstr d14"      // https://lvlworld.com/review/id:591
+                set d14 "map d3xf1 ; set nextmap vstr d15"       // https://lvlworld.com/review/id:663
+                set d15 "map tig_den ; set nextmap vstr d1"      // https://lvlworld.com/review/id:307
+                vstr d1
+            /opt/ioquake3/baseq3/custom4.cfg:
+              content: !Sub |
+                // 'LvL & PlanetQuake Pack 2: The Top Peg' from https://lvlworld.com/download/id:929
+                // (KtSdm3 aka H2SO4 removed due to performance problems on quest
+                set g_gametype 0
+                set fraglimit 20
+                set lvlpq1 "map yog3dm2 ; set nextmap vstr lvlpq2"         // https://lvlworld.com/review/id:585
+                set lvlpq2 "map bal3dm3 ; set nextmap vstr lvlpq3"         // https://lvlworld.com/review/id:670
+                set lvlpq3 "map alkdm06 ; set nextmap vstr lvlpq4"         // https://lvlworld.com/review/id:689
+                set lvlpq4 "map cpm1a ; set nextmap vstr lvlpq5"           // https://lvlworld.com/review/id:701
+                set lvlpq5 "map cpm11 ; set nextmap vstr lvlpq6"           // https://lvlworld.com/review/id:766
+                set lvlpq6 "map qxtourney1 ; set nextmap vstr lvlpq7"      // https://lvlworld.com/review/id:784
+                set lvlpq7 "map saiko_tourney1a ; set nextmap vstr lvlpq8" // https://lvlworld.com/review/id:797
+                set lvlpq8 "map hub3dm1 ; set nextmap vstr lvlpq9"         // https://lvlworld.com/review/id:822
+                set lvlpq9 "map hub3aeroq3 ; set nextmap vstr lvlpq10"     // https://lvlworld.com/review/id:836
+                set lvlpq10 "map bal3dm4 ; set nextmap vstr lvlpq11"       // https://lvlworld.com/review/id:857
+                set lvlpq11 "map unitooldm4 ; set nextmap vstr lvlpq1"     // https://lvlworld.com/review/id:869
+                vstr lvlpq1
+            /opt/ioquake3/baseq3/custom5.cfg:
+              content: !Sub |
+                // 'LvL Q3A - 20 Years' from https://lvlworld.com/review/id:2401
+                // Remove due to performance problems:
+                // - lun3dm5 aka you'll shoot your eyes out remove due to performance
+                // - d3 estatica 
+                // - d5 ct3tourney3
+                // - d6 shibam
+                // - d9  q3dmp23
+                // - d10 q3gwdm2
+                // - d12 rustgrad
+                // - d15 necro6
+                // - d16 trespass
+                // - d17 qfraggel3ffa
+                // - d21 pukka3tourney7
+                set g_gametype 0
+                set fraglimit 20
+                set d1 "map chiropteraDM ; set nextmap vstr d2"  // https://lvlworld.com/review/id:1243
+                set d2 "map auh3dm1 ; set nextmap vstr d3"       // https://lvlworld.com/review/id:614
+                set d3 "map ct3tourney2 ; set nextmap vstr d4"   // https://lvlworld.com/review/id:2100
+                set d4 "map d3xf1 ; set nextmap vstr d5"         // https://lvlworld.com/review/id:663
+                set d5 "map ik3dm2 ; set nextmap vstr d6"        // https://lvlworld.com/review/id:994
+                set d6 "map fr3dm1 ; set nextmap vstr d7"        // https://lvlworld.com/review/id:637
+                set d7 "map jof3dm2 ; set nextmap vstr d8"       // https://lvlworld.com/review/id:1757
+                set d8 "map lun3_20b1 ; set nextmap vstr d9"     // https://lvlworld.com/review/id:2183
+                set d9 "map focal_p132 ; set nextmap vstr d10"   // https://lvlworld.com/review/id:2084
+                set d10 "map hub3dm1 ; set nextmap vstr d11"     // https://lvlworld.com/review/id:822
+                set d11 "map hub3aeroq3a ; set nextmap vstr d12"  // https://lvlworld.com/review/id:1717
+                // not on the pack. testing purposes
+                set d12 "map charonq2dm1v2; set nextmap vstr d13" // https://ws.q3df.org/map/charonq2dm1v2/
+                set d13 "map tabd2map01; set nextmap vstr d1"     // https://ws.q3df.org/map/tabd2map01/
                 vstr d1
             /run/systemd/system/quake3@.service:
               content: !Sub |
                 [Unit]
                 Description=Quake3@%i
                 After=network.target
+                RequiresMountsFor=/mnt
                 
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server%i.cfg
-                KillMode=process
+                ExecStart=/opt/ioquake3/ioq3ded server%i
+                KillMode=control-group
                 Restart=on-failure
-                StandardOutput=null
-                StandardError=null
                 
                 [Install]
                 WantedBy=multi-user.target
@@ -369,8 +484,28 @@ Resources:
                 [Journal]
                 SystemMaxUse=50M
             /usr/bin/icecon:
-              source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
               mode: '000755'
+              source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
+            /opt/ioquake3/ioq3ded:
+              mode: '000755'
+              content: !Sub |
+                #!/bin/bash
+                /opt/ioquake3/ioq3ded.arm64 +exec $@ 2>&1 >/dev/null | gawk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }; fflush(stdout)' | tee -a /mnt/$@.log
+            /opt/ioquake3/leaderboard.sh:
+              mode: '000755'
+              content: !Sub |
+                #!/bin/bash
+                TODAY=$(date +"%Y-%m-%d")
+                grep "$TODAY" /mnt/server0.log | grep -o -E "Kill.* killed" | cut -d":" -f3 | sed "s/ killed//g" | sort | uniq -c | sort -nr > /mnt/"$TODAY"-kills.txt
+                grep "$TODAY" /mnt/server0.log | grep -oP "broadcast: print \\K.* hit the fraglimit" | cut -c 2- | rev | cut -c21- | rev | sort | uniq -c | sort -nr  > /mnt/"$TODAY"-wins.txt
+                grep "$TODAY" /mnt/server0.log | grep MOD_RAILGUN | grep -o -E "Kill.* killed" | cut -d":" -f3 | sed "s/ killed//g" | sort | uniq -c | sort -nr | head -n1 | awk '{print $0 " [RAILGUN]"}'  > /mnt/"$TODAY"-awards.txt
+                grep "$TODAY" /mnt/server0.log | grep MOD_GAUNTLET | grep -o -E "Kill.* killed" | cut -d":" -f3 | sed "s/ killed//g" | sort | uniq -c | sort -nr | head -n1 | awk '{print $0 " [GAUNTLET]"}'  >> /mnt/"$TODAY"-awards.txt
+                grep "$TODAY" /mnt/server0.log | grep MOD_MACHINEGUN | grep -o -E "Kill.* killed" | cut -d":" -f3 | sed "s/ killed//g" | sort | uniq -c | sort -nr | head -n1 | awk '{print $0 " [MACHINEGUN]"}'  >> /mnt/"$TODAY"-awards.txt
+            /etc/cron.d/leaderboard.cron:
+              content: !Sub |
+                # /etc/cron.d/leaderboard.cron
+                * * * * * ec2-user /opt/ioquake3/leaderboard.sh
+                # You need a newline at the end of your crontab, or cron ignores the file.
     Properties:
       LaunchTemplateData: 
         KeyName: !Ref KeyName
@@ -394,7 +529,7 @@ Resources:
         UserData:
           Fn::Base64: !Sub |
             #!/bin/bash -xe
-            yum install -y vim htop aws-cli aws-cfn-bootstrap
+            yum install -y vim htop nfs-utils wget aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
 
             # Associate elastic IP manually to avoid the need for a load balancer
@@ -402,12 +537,24 @@ Resources:
             aws ec2 associate-address --instance-i `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
 
             # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
+            aws configure set default.s3.max_concurrent_requests 1
             aws s3 cp s3://${BucketName}/ /opt/ioquake3/ --exclude baseq3/pak0.pk3 --only-show-errors --recursive
             aws s3 cp s3://${BucketName}/baseq3/pak0.pk3 /opt/ioquake3/baseq3/pak0.pk3 --only-show-errors
             chmod +x /opt/ioquake3/ioq3ded.arm64
 
             # Restart journald so it picks up the 50M limit for log size
             systemctl restart systemd-journald
+
+            # Mount EFS for logs
+            chown -R ec2-user:ec2-user /mnt
+            cat >> /etc/fstab << EOF
+            ${FileSystem}.efs.${AWS::Region}.amazonaws.com:/ /mnt nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0
+            EOF
+            mount -a -t nfs4
+
+            # Free up 200MB of disk space
+            yum clean all
+            rm -rf /var/cache/yum
 
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0

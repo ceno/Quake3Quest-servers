@@ -24,7 +24,7 @@ Parameters:
   BucketName:
     Type: 'String'
     Description: >-
-      ndoBucket to hold all the pak files etc. Put region in the name, as a reminder
+      Bucket to hold all the pak files etc. Put region in the name, as a reminder
       that cross region transfer costs do apply so a bucket per region is most
       cost effective.
   Server0Name:
@@ -39,6 +39,10 @@ Parameters:
     Type: 'String'
     Description: >-
       Password to access server using RCON
+  ProwlApiToken:
+    Type: 'String'
+    Description: >-
+      OPTIONAL: Password for the prowl notification service (https://www.prowlapp.com/), which sends push notifications to iOS devices. May be left empty and the functionality will be skipped entirely
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -168,6 +172,9 @@ Resources:
                 cat /opt/ioquake3/baseq3/demo.cfg
                 cat /opt/ioquake3/baseq3/custom.cfg
                 cat /opt/ioquake3/baseq3/custom2.cfg
+                cat /opt/ioquake3/baseq3/custom3.cfg
+                cat /opt/ioquake3/baseq3/custom5.cfg
+                cat /opt/ioquake3/baseq3/custom3.cfg
 
                 Local console:
                 icecon 127.0.0.1:27960 "${RconPassword}"
@@ -212,13 +219,14 @@ Resources:
                 // Note: net_port and sv_hostname are set in separate cfgs to enable multiple servers per machine
                 //
                 set sv_master1 "13.36.227.32:27950"      // default is master.ioquake3.org
+                set sv_master2 ""                        // default is master.ioquake3.org
                 set dedicated 2                          // 1: dedicated server, but not announced | 2: dedicated server, announced
                 set sv_pure 0                            // 1: pure server, no altered pk3 files
                 set g_log server.log                     // log file name
                 set logfile 0                            // 0:off 1:buffered 2:continuous 3:append to existing
                 set sv_allowDownload 1                   // enables downloading maps from server. Requires clientside config. See https://openarena.fandom.com/wiki/Manual/Automatic_downloading
                 set sv_dlURL ""                          // Tell clients to download pk3s from this URL instead of this server. Empty means use this server.
-                set sv_dlRate 1024                        // Maximum download rate offered to clients (kb/s)
+                set sv_dlRate 4096                        // Maximum download rate offered to clients (kb/s)
                 set rconpassword "${RconPassword}"
                 sets g_needpass 0                        // To set a password set this to 1, and uncomment the sets below
                 //sets g_password "my-password"
@@ -315,7 +323,7 @@ Resources:
             /opt/ioquake3/baseq3/custom.cfg:
               content: !Sub |
                 set g_gametype 0
-                set fraglimit 20                    // frag limit for all modes (0 for no limit)
+                set fraglimit 20
                 set d1 "map hub3aeroq3 ; set nextmap vstr d2"   // https://ws.q3df.org/map/hub3aeroq3/
                 set d2 "map hub3tourney1 ; set nextmap vstr d3" // https://ws.q3df.org/map/hub3tourney1/
                 set d3 "map cpm1a ; set nextmap vstr d4"        // https://ws.q3df.org/map/cpm1a
@@ -325,27 +333,83 @@ Resources:
                 vstr d1
             /opt/ioquake3/baseq3/custom2.cfg:
               content: !Sub |
+                // Custom set of maps for experimentation
                 set g_gametype 0
-                set fraglimit 20                    // frag limit for all modes (0 for no limit)
-                set d1 "map hub3aeroq3 ; set nextmap vstr d2"   // https://ws.q3df.org/map/hub3aeroq3/
-                set d2 "map hub3tourney1 ; set nextmap vstr d3" // https://ws.q3df.org/map/hub3tourney1/
-                set d3 "map cpm1a ; set nextmap vstr d4"        // https://ws.q3df.org/map/cpm1a
-                set d4 "map ztn3dm1 ; set nextmap vstr d5"      // https://ws.q3df.org/map/ztn3dm1/
-                set d5 "map alkdm06 ; set nextmap vstr d6"      // https://ws.q3df.org/map/alkdm06/
-                set d6 "map bal3dm3 ; set nextmap vstr d7"      // https://ws.q3df.org/map/bal3dm3/
-                set d7 "map plutonians ; set nextmap vstr d8"   // https://ws.q3df.org/map/plutonians/
-                set d8 "map simetrik ; set nextmap vstr d9"     // https://ws.q3df.org/map/simetrik/
-                set d9 "map klzdeadly ; set nextmap vstr d10"   // https://ws.q3df.org/map/klzdeadly/
-                set d10 "map charon3dm8 ; set nextmap vstr d11" // https://ws.q3df.org/map/charon3dm8/
-                set d11 "map auh3dm1; set nextmap vstr d12"     // https://ws.q3df.org/map/auh3dm1/
-                set d12 "map simple-dm6; set nextmap vstr d13"    // https://lvlworld.com/download/id:2309
-                set d13 "map lun3_20b1; set nextmap vstr d14"     // https://ws.q3df.org/map/lun3_20b1/
-                set d14 "map mksteel; set nextmap vstr d15"       // https://ws.q3df.org/map/mksteel/
-                set d15 "map akutatourney6; set nextmap vstr d16" // https://ws.q3df.org/map/akutatourney6/
-                set d16 "map akutatourney8; set nextmap vstr d17" // https://lvlworld.com/media/id:2362
-                set d17 "map akutadm1; set nextmap vstr d18"      // https://ws.q3df.org/map/akutadm1/
-                set d18 "map akutadm2; set nextmap vstr d19"      // https://ws.q3df.org/map/akutadm2/
-                set d19 "map akutadm3; set nextmap vstr d1"       // https://ws.q3df.org/map/akutadm3/
+                set fraglimit 20
+                set d1 "map hub3aeroq3 ; set nextmap vstr d2"     // https://ws.q3df.org/map/hub3aeroq3/
+                set d2 "map hub3tourney1 ; set nextmap vstr d3"   // https://ws.q3df.org/map/hub3tourney1/
+                set d3 "map cpm1a ; set nextmap vstr d4"          // https://ws.q3df.org/map/cpm1a
+                set d4 "map ztn3dm1 ; set nextmap vstr d5"        // https://ws.q3df.org/map/ztn3dm1/
+                set d5 "map alkdm06 ; set nextmap vstr d6"        // https://ws.q3df.org/map/alkdm06/
+                set d6 "map bal3dm3 ; set nextmap vstr d7"        // https://ws.q3df.org/map/bal3dm3/
+                set d7 "map simetrik ; set nextmap vstr d8"       // https://ws.q3df.org/map/simetrik/
+                set d8 "map klzdeadly ; set nextmap vstr d9"      // https://ws.q3df.org/map/klzdeadly/
+                set d9 "map charon3dm8 ; set nextmap vstr d10"    // https://ws.q3df.org/map/charon3dm8/
+                set d10 "map auh3dm1; set nextmap vstr d11"       // https://ws.q3df.org/map/auh3dm1/
+                set d11 "map mksteel; set nextmap vstr d12"       // https://ws.q3df.org/map/mksteel/
+                set d12 "map akutatourney6; set nextmap vstr d13" // https://ws.q3df.org/map/akutatourney6/
+                set d13 "map akutatourney8; set nextmap vstr d14" // https://lvlworld.com/media/id:2362
+                set d14 "map akutadm1; set nextmap vstr d15"      // https://ws.q3df.org/map/akutadm1/
+                set d15 "map akutadm2; set nextmap vstr d16"      // https://ws.q3df.org/map/akutadm2/
+                set d16 "map akutadm3; set nextmap vstr d17"      // https://ws.q3df.org/map/akutadm3/
+                set d17 "map charonq2dm1v2; set nextmap vstr d18" // https://ws.q3df.org/map/charonq2dm1v2/
+                set d18 "map tabd2map01; set nextmap vstr d1"     // https://ws.q3df.org/map/tabd2map01/
+                vstr d1
+            /opt/ioquake3/baseq3/custom3.cfg:
+              content: !Sub |
+                // 'LvL Pack - The cream off the top' from https://lvlworld.com/review/id:664
+                set g_gametype 0
+                set fraglimit 20
+                set d1 "map natedm2 ; set nextmap vstr d2"       // https://lvlworld.com/review/id:482
+                set d2 "map ik3dm1 ; set nextmap vstr d3"        // https://lvlworld.com/review/id:20
+                set d3 "map JAPANDM ; set nextmap vstr d4"       // https://lvlworld.com/review/id:44
+                set d4 "map mrcq3t3 ; set nextmap vstr d5"       // https://lvlworld.com/review/id:428
+                set d5 "map ztn3dm2 ; set nextmap vstr d6"       // https://lvlworld.com/review/id:107
+                set d6 "map lun3dm2 ; set nextmap vstr d7"       // https://lvlworld.com/review/id:423
+                set d6 "map bal3dm2 ; set nextmap vstr d7"       // https://lvlworld.com/review/id:429
+                set d7 "map ztn3dm1 ; set nextmap vstr d8"       // https://lvlworld.com/review/id:203
+                set d8 "map auh3dm2 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:501
+                set d9 "map shortcircuit ; set nextmap vstr d10" // https://lvlworld.com/review/id:494
+                set d10 "map cpm8 ; set nextmap vstr d11"        // https://lvlworld.com/review/id:525
+                set d11 "map auh3dm1 ; set nextmap vstr d12"     // https://lvlworld.com/review/id:614
+                set d12 "map fff ; set nextmap vstr d13"         // https://lvlworld.com/review/id:551
+                set d13 "map devdm3 ; set nextmap vstr d14"      // https://lvlworld.com/review/id:591
+                set d14 "map d3xf1 ; set nextmap vstr d15"       // https://lvlworld.com/review/id:663
+                set d15 "map tig_den ; set nextmap vstr d1"      // https://lvlworld.com/review/id:307
+                vstr d1
+            /opt/ioquake3/baseq3/custom4.cfg:
+              content: !Sub |
+                // 'LvL & PlanetQuake Pack 2: The Top Peg' from https://lvlworld.com/download/id:929
+                // KtSdm3 (aka H2SO4) missing due to performance problems
+                set g_gametype 0
+                set fraglimit 20
+                set lvlpq1 "map yog3dm2 ; set nextmap vstr lvlpq2"         // https://lvlworld.com/review/id:585
+                set lvlpq2 "map bal3dm3 ; set nextmap vstr lvlpq3"         // https://lvlworld.com/review/id:670
+                set lvlpq3 "map alkdm06 ; set nextmap vstr lvlpq4"         // https://lvlworld.com/review/id:689
+                set lvlpq4 "map cpm1a ; set nextmap vstr lvlpq5"           // https://lvlworld.com/review/id:701
+                set lvlpq5 "map cpm11 ; set nextmap vstr lvlpq6"           // https://lvlworld.com/review/id:766
+                set lvlpq6 "map qxtourney1 ; set nextmap vstr lvlpq7"      // https://lvlworld.com/review/id:784
+                set lvlpq7 "map saiko_tourney1a ; set nextmap vstr lvlpq8" // https://lvlworld.com/review/id:797
+                set lvlpq8 "map hub3dm1 ; set nextmap vstr lvlpq9"         // https://lvlworld.com/review/id:822
+                set lvlpq9 "map hub3aeroq3 ; set nextmap vstr lvlpq10"     // https://lvlworld.com/review/id:836
+                set lvlpq10 "map bal3dm4 ; set nextmap vstr lvlpq11"       // https://lvlworld.com/review/id:857
+                set lvlpq11 "map unitooldm4 ; set nextmap vstr lvlpq1"     // https://lvlworld.com/review/id:869
+                vstr lvlpq1
+            /opt/ioquake3/baseq3/custom5.cfg:
+              content: !Sub |
+                // 'LvL Q3A - 20 Years' from https://lvlworld.com/review/id:2401
+                // Some maps missing due to performance problems
+                set g_gametype 0
+                set fraglimit 20
+                set d1 "map chiropteraDM ; set nextmap vstr d2"   // https://lvlworld.com/review/id:1243
+                set d2 "map auh3dm1 ; set nextmap vstr d3"        // https://lvlworld.com/review/id:614
+                set d3 "map d3xf1 ; set nextmap vstr d4"          // https://lvlworld.com/review/id:663
+                set d4 "map ik3dm2 ; set nextmap vstr d5"         // https://lvlworld.com/review/id:994
+                set d5 "map fr3dm1 ; set nextmap vstr d6"         // https://lvlworld.com/review/id:637
+                set d6 "map jof3dm2 ; set nextmap vstr d7"        // https://lvlworld.com/review/id:1757
+                set d7 "map focal_p132 ; set nextmap vstr d8"     // https://lvlworld.com/review/id:2084
+                set d8 "map hub3dm1 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:822
+                set d9 "map hub3aeroq3a ; set nextmap vstr d1"  // https://lvlworld.com/review/id:1717
                 vstr d1
             /run/systemd/system/quake3@.service:
               content: !Sub |
@@ -369,8 +433,8 @@ Resources:
                 [Journal]
                 SystemMaxUse=50M
             /usr/bin/icecon:
-              source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
               mode: '000755'
+              source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
     Properties:
       LaunchTemplateData: 
         KeyName: !Ref KeyName
@@ -394,14 +458,31 @@ Resources:
         UserData:
           Fn::Base64: !Sub |
             #!/bin/bash -xe
-            yum install -y vim htop aws-cli aws-cfn-bootstrap
+            # iOS push notification functionality
+            trap 'error $? $LINENO' ERR
+            trap 'success' EXIT
+            error() {
+              [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Error!" -F description="Error $1 occurred on line $2"
+            }
+            success() {
+              [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready `systemctl status quake3@0 | head -n1` `systemctl status quake3@0 | grep Active`"
+              [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready `systemctl status quake3@1 | head -n1` `systemctl status quake3@1 | grep Active`"
+            }
+            [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Online" -F description="`curl -s http://169.254.169.254/latest/meta-data/instance-type` getting ready to frag at ${ElasticIp}:27960"
+            # Begin actual OS initialisation
+            yum install -y vim htop wget aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
+
+            # Clean yum to free up 200MB of disk space
+            yum clean all
+            rm -rf /var/cache/yum
 
             # Associate elastic IP manually to avoid the need for a load balancer
             aws configure set region ${AWS::Region}
             aws ec2 associate-address --instance-i `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
 
             # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
+            aws configure set default.s3.max_concurrent_requests 1
             aws s3 cp s3://${BucketName}/ /opt/ioquake3/ --exclude baseq3/pak0.pk3 --only-show-errors --recursive
             aws s3 cp s3://${BucketName}/baseq3/pak0.pk3 /opt/ioquake3/baseq3/pak0.pk3 --only-show-errors
             chmod +x /opt/ioquake3/ioq3ded.arm64

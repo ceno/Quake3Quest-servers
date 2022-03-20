@@ -226,7 +226,7 @@ Resources:
                 set logfile 0                            // 0:off 1:buffered 2:continuous 3:append to existing
                 set sv_allowDownload 1                   // enables downloading maps from server. Requires clientside config. See https://openarena.fandom.com/wiki/Manual/Automatic_downloading
                 set sv_dlURL ""                          // Tell clients to download pk3s from this URL instead of this server. Empty means use this server.
-                set sv_dlRate 4096                        // Maximum download rate offered to clients (kb/s)
+                set sv_dlRate 4096                       // Maximum download rate offered to clients (kb/s)
                 set rconpassword "${RconPassword}"
                 sets g_needpass 0                        // To set a password set this to 1, and uncomment the sets below
                 //sets g_password "my-password"
@@ -445,7 +445,7 @@ Resources:
           - !Ref InstanceSecurityGroup
         # This is meant to be overridden by the ASG
         InstanceType: t4g.nano
-        # The option below is really important! The alternative is for it to be unlimited, which might incur extra costs on top of the hourly rate.
+        # The option below is really important! It specifies the behaviour when the instance runs out of CPU credits
         CreditSpecification:
           CpuCredits: unlimited
         BlockDeviceMappings:
@@ -462,13 +462,13 @@ Resources:
             trap 'error $? $LINENO' ERR
             trap 'success' EXIT
             error() {
-              [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Error!" -F description="Error $1 occurred on line $2"
+              [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Error!" -F description="${Server0Name} has failed to boot. Error $1 occurred on line $2"
             }
             success() {
-              [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready `systemctl status quake3@0 | head -n1` `systemctl status quake3@0 | grep Active`"
-              [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready `systemctl status quake3@1 | head -n1` `systemctl status quake3@1 | grep Active`"
+              [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready" -F description="${Server0Name} `systemctl status quake3@0 | head -n1` `systemctl status quake3@0 | grep Active`"
+              [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready" -F description="${Server1Name} `systemctl status quake3@1 | head -n1` `systemctl status quake3@1 | grep Active`"
             }
-            [ "${ProwlApiToken}" != "" ] curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Online" -F description="`curl -s http://169.254.169.254/latest/meta-data/instance-type` getting ready to frag at ${ElasticIp}:27960"
+            [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Boot" -F description="${Server0Name} `curl -s http://169.254.169.254/latest/meta-data/instance-type`/${AWS::Region}/${ElasticIp}:27960"
             # Begin actual OS initialisation
             yum install -y vim htop wget aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1

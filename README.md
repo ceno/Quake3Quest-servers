@@ -54,7 +54,7 @@ For a base `t4g.nano` server, the expected cost base is as follows
 | Elastic IP  | -             | $0     | $0      | $0     |
 | Network Out | 2GB/month max | $0.005 | $0.16   | $1.92  |
 | S3          | 500GB         | -      | $0.012  | $0.14  |
-| TOTAL       | -             |        | $1.23   | ~$15   |
+| TOTAL       | -             | $0.04  | $1.23   | ~$15   |
 
 Upgrading to a `t4g.micro` doubles the EC2 cost but everything else
 stays the same.

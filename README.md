@@ -30,13 +30,11 @@ s3://my-ioquake3-bucket
 │   ├── pak6.pk3
 │   ├── pak7.pk3
 │   ├── pak8.pk3
-│   ├── qagameaarch64.so
 ├── ioq3ded.arm64
 └── missionpack
     ├── pak1.pk3
     ├── pak2.pk3
     ├── pak3.pk3
-    └── qagameaarch64.so
 ```
 
 For binaries, look at these forks for builds for amazon linux 2

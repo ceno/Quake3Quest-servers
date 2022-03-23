@@ -173,14 +173,12 @@ Resources:
                 cat /opt/ioquake3/baseq3/custom.cfg
                 cat /opt/ioquake3/baseq3/custom2.cfg
                 cat /opt/ioquake3/baseq3/custom3.cfg
+                cat /opt/ioquake3/baseq3/custom4.cfg
                 cat /opt/ioquake3/baseq3/custom5.cfg
-                cat /opt/ioquake3/baseq3/custom3.cfg
 
-                Local console:
+                RCON:
                 icecon 127.0.0.1:27960 "${RconPassword}"
-
-                Remote console:
-                quake3-rcon 13.38.149.128 "${RconPassword}"
+                ssh ec2-user@${ElasticIp} icecon 127.0.0.1:27960 "${RconPassword}"
 
                 Quake rcon commands:
                 status
@@ -469,6 +467,7 @@ Resources:
               [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready" -F description="${Server1Name} `systemctl status quake3@1 | head -n1` `systemctl status quake3@1 | grep Active`"
             }
             [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Boot" -F description="${Server0Name} `curl -s http://169.254.169.254/latest/meta-data/instance-type`/${AWS::Region}/${ElasticIp}:27960"
+
             # Begin actual OS initialisation
             yum install -y vim htop wget aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
@@ -479,7 +478,7 @@ Resources:
 
             # Associate elastic IP manually to avoid the need for a load balancer
             aws configure set region ${AWS::Region}
-            aws ec2 associate-address --instance-i `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
+            aws ec2 associate-address --instance-id `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
 
             # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
             aws configure set default.s3.max_concurrent_requests 1

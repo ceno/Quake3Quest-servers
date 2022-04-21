@@ -6,7 +6,7 @@ TODO:
 - Make sure that every map is valid at startup script
 - Replace icecon with direct calls to nc like so:
 
-#TODO: get rid of icecono
+```
 #22:14:50 map-picker $ printf "\xff\xff\xff\xffrcon PASSWORD vstr d1" | nc -u -w1 13.38.149.128 27960
 #????print
 #22:15:05 map-picker $ printf "\xff\xff\xff\xffrcon PASSWORD status" | nc -u -w1 13.38.149.128 27960
@@ -19,4 +19,4 @@ TODO:
 #????print
 #22:15:17 map-picker $ printf "\xff\xff\xff\xffrcon PASSWORD status" | nc -u -w1 13.38.149.128 27960
 #????print
-
+```

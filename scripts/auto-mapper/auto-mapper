@@ -1,0 +1,87 @@
+#!/bin/bash
+LOGFILE="$1"
+MAPLIST="$2"
+STATE_FILE="/tmp/state.txt"
+RCON_PASSWORD="CHANGEME"
+
+#### Load map data
+SMALL_THRESHOLD=4
+MEDIUM_THRESHOLD=7
+#players:  0  1  2  3  4  5  6  7  8  9  10 11 12
+FRAGLIMITS=(10 10 10 15 20 20 25 25 30 30 30 35 35)
+SMALL_MAPS=$(grep -o -E ".*\s[0-4]$" "$MAPLIST" | grep -o -E "^\w*")
+MEDIUM_MAPS=$(grep -o -E ".*\s[5-7]$" "$MAPLIST" | grep -o -E "^\w*")
+LARGE_MAPS=$(grep -o -E ".*\s12$" "$MAPLIST" | grep -o -E "^\w*")
+
+SAVEIFS=$IFS   # Save current IFS (Internal Field Separator)
+IFS=$'\n'      # Change IFS to newline charP
+SMALL_MAPS=($SMALL_MAPS) # split the string into an array by the same name
+TOTAL_SMALL_MAPS=${#SMALL_MAPS[@]}
+MEDIUM_MAPS=($MEDIUM_MAPS)
+TOTAL_MEDIUM_MAPS=${#MEDIUM_MAPS[@]}
+LARGE_MAPS=($LARGE_MAPS)
+TOTAL_LARGE_MAPS=${#LARGE_MAPS[@]}
+IFS=$SAVEIFS   # Restore original IFS
+
+echo small maps: $TOTAL_SMALL_MAPS
+echo medium maps: $TOTAL_MEDIUM_MAPS
+echo large maps: $TOTAL_LARGE_MAPS
+paste <(printf "%s\n" "${SMALL_MAPS[@]}") <(printf "%s\n" "${MEDIUM_MAPS[@]}") <(printf "%s\n" "${LARGE_MAPS[@]}") | column -t
+# https://stackoverflow.com/questions/6723426/looping-over-arrays-printing-both-index-and-value
+
+#### Load state
+small=$(grep --line-buffered -F "small" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$")
+medium=$(grep --line-buffered -F "medium" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$")
+large=$(grep --line-buffered -F "large" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$")
+echo INIT STATE: small$small medium$medium large$large
+
+echo ****LISTENING
+while read line
+do
+  if [[ "$line" == *"NEXT"* ]] || [[ "$line" == *"Fraglimit hit"* ]]; then
+    echo "$line"
+    echo  TRIGGER DETECTED: Now waiting 7 seconds
+    sleep 7
+    # Load players
+    numberOfLines=$(icecon -c "status" 127.0.0.1:27960 "$RCON_PASSWORD" | wc -l)
+    numberOfPlayers=$((numberOfLines-8))
+    echo PLAYERS: $numberOfPlayers
+    # Decide fraglimit
+    fraglimit=${FRAGLIMITS[$numberOfPlayers]}
+    # Decide map
+    if [ "$numberOfPlayers" -le "$SMALL_THRESHOLD" ]; then
+      small=$((small+1))
+      if [ "$small" -ge "$TOTAL_SMALL_MAPS" ]; then
+        small=0
+      fi
+      map="${SMALL_MAPS[$small]}"
+      echo le 4: load $map with fraglimit $fraglimit
+    else
+      if [ "$numberOfPlayers" -le "$MEDIUM_THRESHOLD" ]; then
+        medium=$((medium+1))
+        if [ "$medium" -ge "$TOTAL_MEDIUM_MAPS" ]; then
+          medium=0
+        fi
+        map="${MEDIUM_MAPS[$medium]}"
+        echo le 7: load $map with fraglimit $fraglimit
+      else
+        large=$((large+1))
+        if [ "$large" -ge "$TOTAL_LARGE_MAPS" ]; then
+          large=0
+        fi
+        map="large$large"
+        map="${LARGE_MAPS[$large]}"
+        echo 8+: load $map with fraglimit $fraglimit
+      fi
+    fi
+    icecon -c "set fraglimit $fraglimit" 127.0.0.1:27960 "$RCON_PASSWORD"
+    HIDE_OUTPUT=$(icecon -c "map $map" 127.0.0.1:27960 "$RCON_PASSWORD")
+    echo STATE AFTER CHANGE: small$small medium$medium large$large
+
+cat << EOF > "$STATE_FILE"
+small $small
+medium $medium
+large $large
+EOF
+  fi
+done < <(tail -n0 -f "$LOGFILE")

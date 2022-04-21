@@ -1,0 +1,13 @@
+[Unit]
+Description=Auto-mapper on port 2796%i
+After=quake3@.service
+
+[Service]
+User=ec2-user
+Type=simple
+ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/ffamaps.txt
+KillMode=control-group
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

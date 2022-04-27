@@ -38,7 +38,7 @@ echo INIT STATE: small$small medium$medium large$large
 echo ****LISTENING
 while read line
 do
-  if [[ "$line" == *"NEXT"* ]] || [[ "$line" == *"Fraglimit hit"* ]]; then
+  if [[ "$line" == *"NEXT"* ]] || [[ "$line" == *"Exit: Fraglimit hit"* ]] || [[ "$line" == *"Exit: Timelimit hit"* ]]; then
     echo "$line"
     echo  TRIGGER DETECTED: Now waiting 7 seconds
     sleep 7

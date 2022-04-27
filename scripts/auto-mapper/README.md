@@ -17,6 +17,21 @@ set per number of players. Timelimit is assumed to be constant, and relied upon
 for resetting the server back to an appropriate map when all players leave.
 
 
+#### Installation
+
+```
+sudo make install
+```
+
+#### Reference dommands to control service
+
+```
+sudo systemctl start auto-mapper@0
+sudo systemctl stop auto-mapper@0
+sudo systemctl restart auto-mapper@0
+journalctl -f -u auto-mapper@0
+```
+
 #### TODO
 - Solve how to set server config, like address and especially rcon password, with an eye to support multiple quake3 instances per server. Conf file in /etc? How to parse it?
 - Make sure that every map is valid at startup and fail if not? If a map is on the list but missing, the `map` rcon command will fail, and players will replay the map they just played.

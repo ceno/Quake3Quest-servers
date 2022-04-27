@@ -1,7 +1,23 @@
 # Auto mapper
 
-TODO:
-- Make state file optional
+A Linux service that provides automatic map rotation for a quake3 server using
+RCON.
+
+The map list format is based on [CPMA's](https://playmorepromode.com/guides/cpma-map-lists).
+```
+cpm1a             0 4
+ztn3dm2           0 4
+cpm15             4 7
+cpm2              4 7
+akutadm3          7 12
+lsdm1             7 12
+```
+Only these 3 options are supported (i.e. `0 4`, `4 7` and `7 12`). Fraglimit is
+set per number of players. Timelimit is assumed to be constant, and relied upon
+for resetting the server back to an appropriate map when all players leave.
+
+
+#### TODO
 - Solve how to set server config, like address and especially rcon password
 - Make sure that every map is valid at startup script
 - Replace icecon with direct calls to nc like so:

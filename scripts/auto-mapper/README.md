@@ -3,14 +3,14 @@
 A Linux service that provides automatic map rotation for a quake3 server using
 RCON.
 
-The map list format is based on [CPMA's](https://playmorepromode.com/guides/cpma-map-lists).
+The map list format is based on
+[CPMA's](https://playmorepromode.com/guides/cpma-map-lists), even though the
+algorithm is quite different. A minimal example wil look like this (see
+`ffamaps.txt` for full file)
 ```
 cpm1a             0 4
-ztn3dm2           0 4
 cpm15             4 7
-cpm2              4 7
 akutadm3          7 12
-lsdm1             7 12
 ```
 Only these 3 options are supported (i.e. `0 4`, `4 7` and `7 12`). Fraglimit is
 set per number of players. Timelimit is assumed to be constant, and relied upon

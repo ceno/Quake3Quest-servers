@@ -1,3 +1,0 @@
-small 7
-medium 8
-large 0

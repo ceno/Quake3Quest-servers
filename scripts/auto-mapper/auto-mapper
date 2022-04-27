@@ -29,10 +29,10 @@ echo large maps: $TOTAL_LARGE_MAPS
 paste <(printf "%s\n" "${SMALL_MAPS[@]}") <(printf "%s\n" "${MEDIUM_MAPS[@]}") <(printf "%s\n" "${LARGE_MAPS[@]}") | column -t
 # https://stackoverflow.com/questions/6723426/looping-over-arrays-printing-both-index-and-value
 
-#### Load state
-small=$(grep --line-buffered -F "small" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$")
-medium=$(grep --line-buffered -F "medium" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$")
-large=$(grep --line-buffered -F "large" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$")
+#### Attempt to load state. If file is missing, default to 0 and write state to file later.
+small=$(grep --line-buffered -F "small" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$"  || echo 0)
+medium=$(grep --line-buffered -F "medium" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$"  || echo 0)
+large=$(grep --line-buffered -F "large" "$STATE_FILE" | grep --line-buffered -o -E "[0-9]*$"  || echo 0)
 echo INIT STATE: small$small medium$medium large$large
 
 echo ****LISTENING

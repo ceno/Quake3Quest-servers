@@ -18,8 +18,8 @@ for resetting the server back to an appropriate map when all players leave.
 
 
 #### TODO
-- Solve how to set server config, like address and especially rcon password
-- Make sure that every map is valid at startup script
+- Solve how to set server config, like address and especially rcon password, with an eye to support multiple quake3 instances per server. Conf file in /etc? How to parse it?
+- Make sure that every map is valid at startup and fail if not? If a map is on the list but missing, the `map` rcon command will fail, and players will replay the map they just played.
 - Replace icecon with direct calls to nc like so:
 
 ```

@@ -251,7 +251,7 @@ Resources:
               content: !Sub |
                 set sv_hostname "${Server0Name}"
                 set net_port 27960
-                exec varied.cfg
+                exec ffa.cfg
             /opt/ioquake3/baseq3/server1.cfg:
               content: !Sub |
                 set sv_hostname "${Server1Name}"
@@ -263,16 +263,6 @@ Resources:
                 // These facilitate upping player numbers by joining from PC clients and leaving them idle
                 set g_inactivity 0                       // do not kick inactive users
                 set g_forcerespawn 1                     // auto respawn
-            /opt/ioquake3/baseq3/standard.cfg:
-              content: !Sub |
-                set g_gametype 0                    //  0       Free for all
-                set fraglimit 20                    // frag limit for all modes (0 for no limit)
-                set d1 "map q3dm7 ; set nextmap vstr d2"
-                set d2 "map q3dm17 ; set nextmap vstr d3"
-                set d3 "map q3dm6 ; set nextmap vstr d4"
-                set d4 "map q3dm15 ; set nextmap vstr d1"
-                
-                vstr d1                             // load first map in rotation
             /opt/ioquake3/baseq3/ctf.cfg:
               content: !Sub |
                 set g_gametype 4                    //  0       Capture the Flag
@@ -281,10 +271,12 @@ Resources:
                 set g_teamForceBalance 1            // 0:free selection, 1:forces player to join weak team
                 set g_friendlyFire 1                // 1: friendly fire allowed in CTF mode
 
-                set c1 "map q3ctf1 ; set nextmap vstr c2"
-                set c2 "map q3ctf2 ; set nextmap vstr c3"
-                set c3 "map q3ctf4 ; set nextmap vstr c1"
-                vstr c1                             // load first map in rotation
+                set d1  "map q3wcp9 ; set nextmap vstr d2"	// https://ws.q3df.org/map/q3wcp9
+                set d2  "map q3wcp5 ; set nextmap vstr d3"	// https://ws.q3df.org/map/q3wcp5
+                set d3  "map q3wxs1 ; set nextmap vstr d4"	// https://ws.q3df.org/map/q3wxs1
+                set d4  "map q3ctf2 ; set nextmap vstr d5"	// https://ws.q3df.org/map/q3ctf2
+                set d5  "map q3ctf4 ; set nextmap vstr d1"	// https://ws.q3df.org/map/q3ctf4
+                vstr d1
             /opt/ioquake3/baseq3/1x1.cfg:
               content: !Sub |
                 set g_gametype 0                    //  0       Free for all
@@ -305,7 +297,7 @@ Resources:
                 set d2 "map q3dm17 ; set nextmap vstr d3"
                 set d3 "map q3tourney2 ; set nextmap vstr d1"
                 vstr d1
-            /opt/ioquake3/baseq3/varied.cfg:
+            /opt/ioquake3/baseq3/ffa.cfg:
               content: !Sub |
                 set g_gametype 0
                 set fraglimit 20                    // frag limit for all modes (0 for no limit)
@@ -347,14 +339,11 @@ Resources:
                 set d8 "map klzdeadly ; set nextmap vstr d9"      // https://ws.q3df.org/map/klzdeadly/
                 set d9 "map charon3dm8 ; set nextmap vstr d10"    // https://ws.q3df.org/map/charon3dm8/
                 set d10 "map auh3dm1; set nextmap vstr d11"       // https://ws.q3df.org/map/auh3dm1/
-                set d11 "map mksteel; set nextmap vstr d12"       // https://ws.q3df.org/map/mksteel/
-                set d12 "map akutatourney6; set nextmap vstr d13" // https://ws.q3df.org/map/akutatourney6/
-                set d13 "map akutatourney8; set nextmap vstr d14" // https://lvlworld.com/media/id:2362
-                set d14 "map akutadm1; set nextmap vstr d15"      // https://ws.q3df.org/map/akutadm1/
-                set d15 "map akutadm2; set nextmap vstr d16"      // https://ws.q3df.org/map/akutadm2/
-                set d16 "map akutadm3; set nextmap vstr d17"      // https://ws.q3df.org/map/akutadm3/
-                set d17 "map charonq2dm1v2; set nextmap vstr d18" // https://ws.q3df.org/map/charonq2dm1v2/
-                set d18 "map tabd2map01; set nextmap vstr d1"     // https://ws.q3df.org/map/tabd2map01/
+                set d11 "map akutadm1; set nextmap vstr d12"      // https://ws.q3df.org/map/akutadm1/
+                set d12 "map akutadm2; set nextmap vstr d13"      // https://ws.q3df.org/map/akutadm2/
+                set d13 "map akutadm3; set nextmap vstr d14"      // https://ws.q3df.org/map/akutadm3/
+                set d14 "map charonq2dm1v2; set nextmap vstr d15" // https://ws.q3df.org/map/charonq2dm1v2/
+                set d15 "map tabd2map01; set nextmap vstr d1"     // https://ws.q3df.org/map/tabd2map01/
                 vstr d1
             /opt/ioquake3/baseq3/custom3.cfg:
               content: !Sub |
@@ -367,10 +356,9 @@ Resources:
                 set d4 "map mrcq3t3 ; set nextmap vstr d5"       // https://lvlworld.com/review/id:428
                 set d5 "map ztn3dm2 ; set nextmap vstr d6"       // https://lvlworld.com/review/id:107
                 set d6 "map lun3dm2 ; set nextmap vstr d7"       // https://lvlworld.com/review/id:423
-                set d6 "map bal3dm2 ; set nextmap vstr d7"       // https://lvlworld.com/review/id:429
-                set d7 "map ztn3dm1 ; set nextmap vstr d8"       // https://lvlworld.com/review/id:203
-                set d8 "map auh3dm2 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:501
-                set d9 "map shortcircuit ; set nextmap vstr d10" // https://lvlworld.com/review/id:494
+                set d7 "map bal3dm2 ; set nextmap vstr d8"       // https://lvlworld.com/review/id:429
+                set d8 "map ztn3dm1 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:203
+                set d9 "map auh3dm2 ; set nextmap vstr d10"       // https://lvlworld.com/review/id:501
                 set d10 "map cpm8 ; set nextmap vstr d11"        // https://lvlworld.com/review/id:525
                 set d11 "map auh3dm1 ; set nextmap vstr d12"     // https://lvlworld.com/review/id:614
                 set d12 "map fff ; set nextmap vstr d13"         // https://lvlworld.com/review/id:551
@@ -381,7 +369,7 @@ Resources:
             /opt/ioquake3/baseq3/custom4.cfg:
               content: !Sub |
                 // 'LvL & PlanetQuake Pack 2: The Top Peg' from https://lvlworld.com/download/id:929
-                // KtSdm3 (aka H2SO4) missing due to performance problems
+                // KtSdm3 (aka H2SO4) and saiko_tourney1a missing due to performance problems
                 set g_gametype 0
                 set fraglimit 20
                 set lvlpq1 "map yog3dm2 ; set nextmap vstr lvlpq2"         // https://lvlworld.com/review/id:585
@@ -390,11 +378,10 @@ Resources:
                 set lvlpq4 "map cpm1a ; set nextmap vstr lvlpq5"           // https://lvlworld.com/review/id:701
                 set lvlpq5 "map cpm11 ; set nextmap vstr lvlpq6"           // https://lvlworld.com/review/id:766
                 set lvlpq6 "map qxtourney1 ; set nextmap vstr lvlpq7"      // https://lvlworld.com/review/id:784
-                set lvlpq7 "map saiko_tourney1a ; set nextmap vstr lvlpq8" // https://lvlworld.com/review/id:797
-                set lvlpq8 "map hub3dm1 ; set nextmap vstr lvlpq9"         // https://lvlworld.com/review/id:822
-                set lvlpq9 "map hub3aeroq3 ; set nextmap vstr lvlpq10"     // https://lvlworld.com/review/id:836
-                set lvlpq10 "map bal3dm4 ; set nextmap vstr lvlpq11"       // https://lvlworld.com/review/id:857
-                set lvlpq11 "map unitooldm4 ; set nextmap vstr lvlpq1"     // https://lvlworld.com/review/id:869
+                set lvlpq7 "map hub3dm1 ; set nextmap vstr lvlpq8"         // https://lvlworld.com/review/id:822
+                set lvlpq8 "map hub3aeroq3 ; set nextmap vstr lvlpq9"     // https://lvlworld.com/review/id:836
+                set lvlpq9  "map bal3dm4 ; set nextmap vstr lvlpq10"       // https://lvlworld.com/review/id:857
+                set lvlpq10 "map unitooldm4 ; set nextmap vstr lvlpq1"     // https://lvlworld.com/review/id:869
                 vstr lvlpq1
             /opt/ioquake3/baseq3/custom5.cfg:
               content: !Sub |
@@ -411,6 +398,60 @@ Resources:
                 set d7 "map focal_p132 ; set nextmap vstr d8"     // https://lvlworld.com/review/id:2084
                 set d8 "map hub3dm1 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:822
                 set d9 "map hub3aeroq3a ; set nextmap vstr d1"  // https://lvlworld.com/review/id:1717
+                vstr d1
+            /opt/ioquake3/baseq3/custom6.cfg:
+              content: !Sub |
+                // CPMP map pack Part I
+                // Removed because too big: cpm13, cpm18r, cpm20, cpm21
+                // Removed because bad perf: cpm19, cpm17 (love :-( )
+                set g_gametype 0
+                set fraglimit 20
+                set d1 "map cpm10 ; set nextmap vstr d2" // OK
+                set d2 "map cpm11 ; set nextmap vstr d3" // ok
+                set d3 "map cpm12 ; set nextmap vstr d4" // OK known quantity - this is actually dismemberment?
+                set d4 "map cpm14 ; set nextmap vstr d5" // LOVE frame drops - needs testing in group. felt ok
+                set d5 "map cpm15 ; set nextmap vstr d6" // frame drops - needs testing felt ok
+                set d6 "map cpm16 ; set nextmap vstr d7" // LOVE OK
+                set d7 "map cpm1a ; set nextmap vstr d8" // OK - known quantity, the one that's kind of ugly but fun
+                set d8 "map cpm2 ; set nextmap vstr d1"  // OK
+                vstr d1
+            /opt/ioquake3/baseq3/custom7.cfg:
+              content: !Sub |
+                // CPMP map pack Part II
+                // Removed because too big cpm25, cpm26, cpm27, cpm4a, cpma3, cpm9 (also bad perf)
+                // Removed because bad perf cpm23
+                // Removed because too small cpm7
+                set g_gametype 0
+                set fraglimit 20
+                set d1  "map cpm22 ; set nextmap vstr d2" // OK aerowalk with a q2 skin.dont like it
+                set d2  "map cpm23 ; set nextmap vstr d3" // BAD PERF LOVE but frame drops. Great for 1x1
+                set d3  "map cpm24 ; set nextmap vstr d4" // perfect
+                set d4  "map cpm28 ; set nextmap vstr d5" // OK but what is this cartooon shit doing here?
+                set d5  "map cpm29 ; set nextmap vstr d6" // OK
+                set d6  "map cpm3 ; set nextmap vstr d7"  // perfect
+                set d7  "map cpm6 ; set nextmap vstr d8" // perfect
+                set d8  "map cpm8 ; set nextmap vstr d9" // OK known quantity - that one that's quite ugly
+                set d9  "map cpm9 ; set nextmap vstr d1" // Bad perf with 8 ppl! LOVE LOVE but TOO BIG 8 minimum OK
+                vstr d2
+            /opt/ioquake3/baseq3/osp.cfg:
+              content: !Sub |
+                // Classic OSP map pack
+                // https://ws.q3df.org/map/ospdm1/
+                set g_gametype 0
+                set fraglimit 20
+
+                set d1  "map ospdm1 ; set nextmap vstr d2"
+                set d2  "map ospdm2 ; set nextmap vstr d3"
+                set d3  "map ospdm3 ; set nextmap vstr d4"
+                set d4  "map ospdm4 ; set nextmap vstr d5"
+                set d5  "map ospdm5 ; set nextmap vstr d6"
+                set d6  "map ospdm6 ; set nextmap vstr d7"
+                set d7  "map ospdm7 ; set nextmap vstr d8"
+                set d8  "map ospdm8 ; set nextmap vstr d9"
+                set d9  "map ospdm9 ; set nextmap vstr d10"
+                set d10 "map ospdm10 ; set nextmap vstr d11"
+                set d11 "map ospdm11 ; set nextmap vstr d12"
+                set d12 "map ospdm12 ; set nextmap vstr d1"
                 vstr d1
             /run/systemd/system/quake3@.service:
               content: !Sub |

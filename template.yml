@@ -228,10 +228,13 @@ Resources:
                 set rconpassword "${RconPassword}"
                 sets g_needpass 0                        // To set a password set this to 1, and uncomment the sets below
                 //sets g_password "my-password"
+                set g_doWarmup 1                         // 0:no warmup 1:do warmup
+                set g_warmup 5                           // How long is the warm up (in seconds)
                 
                 // 3. Game settings (common across all modes)
                 //
                 set sv_maxclients 8                      // max. number of clients than can connect
+                set timelimit 30                         // Match timelimit
                 set g_motd "Enter the Slaughter-Verse!"
                 set g_allowvote 1                        // allow players to vote for map changes
                 set timelimit 0                          // time limit in minutes for all modes (0 for no limit)

@@ -220,7 +220,7 @@ Resources:
                 set sv_master2 ""                        // default is master.ioquake3.org
                 set dedicated 2                          // 1: dedicated server, but not announced | 2: dedicated server, announced
                 set sv_pure 0                            // 1: pure server, no altered pk3 files
-                set g_log server.log                     // log file name
+                set g_log ""                             // log file name
                 set logfile 0                            // 0:off 1:buffered 2:continuous 3:append to existing
                 set sv_allowDownload 1                   // enables downloading maps from server. Requires clientside config. See https://openarena.fandom.com/wiki/Manual/Automatic_downloading
                 set sv_dlURL ""                          // Tell clients to download pk3s from this URL instead of this server. Empty means use this server.

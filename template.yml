@@ -436,6 +436,14 @@ Resources:
             /usr/bin/icecon:
               mode: '000755'
               source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
+            /opt/ioquake3/ffamaps.txt:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/ffamaps.txt'
+            /usr/bin/auto-mapper:
+              mode: '000755'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'
+            /run/systemd/system/auto-mapper@.service:
+              mode: '000644'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper%40.service'
     Properties:
       LaunchTemplateData: 
         KeyName: !Ref KeyName
@@ -472,7 +480,7 @@ Resources:
             [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Boot" -F description="${Server0Name} `curl -s http://169.254.169.254/latest/meta-data/instance-type`/${AWS::Region}/${ElasticIp}:27960"
 
             # Begin actual OS initialisation
-            yum install -y vim htop wget aws-cli aws-cfn-bootstrap
+            yum install -y vim htop wget nc aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
 
             # Clean yum to free up 200MB of disk space
@@ -493,7 +501,7 @@ Resources:
             systemctl restart systemd-journald
 
             # Start quake3 servers if a name for them has been passed in the params
-            [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0
+            [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0
             [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1
 Outputs:
   ElasticIp:

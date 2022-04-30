@@ -1,8 +1,15 @@
 #!/bin/bash
 LOGFILE="$1"
 MAPLIST="$2"
+RCON_PASSWORD="$3"
+SERVER_PORT="$4"
 STATE_FILE="/tmp/state.txt"
-RCON_PASSWORD="CHANGEME"
+RCON_TIMEOUT=1
+
+rcon () {
+  RCON_CMD="$1"
+  (printf "\xFF\xFF\xFF\xFFrcon $RCON_PASSWORD $RCON_CMD"; sleep $RCON_TIMEOUT) | ncat --udp 127.0.0.1 $SERVER_PORT
+}
 
 #### Load map data
 SMALL_THRESHOLD=4
@@ -43,8 +50,8 @@ do
     echo  TRIGGER DETECTED: Now waiting 7 seconds
     sleep 7
     # Load players
-    numberOfLines=$(icecon -c "status" 127.0.0.1:27960 "$RCON_PASSWORD" | wc -l)
-    numberOfPlayers=$((numberOfLines-8))
+    numberOfLines=$(rcon "status" | wc -l)
+    numberOfPlayers=$((numberOfLines-5))
     echo PLAYERS: $numberOfPlayers
     # Decide fraglimit
     fraglimit=${FRAGLIMITS[$numberOfPlayers]}
@@ -74,8 +81,8 @@ do
         echo 8+: load $map with fraglimit $fraglimit
       fi
     fi
-    icecon -c "set fraglimit $fraglimit" 127.0.0.1:27960 "$RCON_PASSWORD"
-    HIDE_OUTPUT=$(icecon -c "map $map" 127.0.0.1:27960 "$RCON_PASSWORD")
+    HIDE_OUTPUT=$(rcon "set fraglimit $fraglimit")
+    HIDE_OUTPUT=$(rcon "map $map")
     echo STATE AFTER CHANGE: small$small medium$medium large$large
 
 cat << EOF > "$STATE_FILE"

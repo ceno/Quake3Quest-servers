@@ -1,8 +1,10 @@
 # Auto mapper
 
-A Linux service that provides automatic map rotation for a quake3 server using
-RCON. Requires netcat to be installed on the system (which most Linux distro
-provide out of the box including raspbian).
+A Linux service that provides map rotation adjusted for number of players for a
+vanilla quake3 server. Requires the netcat package to be installed on the
+system, as the service requires it to establish an RCON connection to the
+server.  The package is installed by default on most Linux distros, including
+raspbian.
 
 The map list format is based on
 [CPMA's](https://playmorepromode.com/guides/cpma-map-lists), even though the

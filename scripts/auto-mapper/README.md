@@ -10,7 +10,7 @@ algorithm is quite different. A minimal example wil look like this (see
 `ffamaps.txt` for full file)
 ```
 cpm1a             0 4
-cpm15             4 7
+cpm15             4 7  // comment: http://www.map-url.com
 akutadm3          7 12
 ```
 Only these 3 options are supported (i.e. `0 4`, `4 7` and `7 12`). Fraglimit is

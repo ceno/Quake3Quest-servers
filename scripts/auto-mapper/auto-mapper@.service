@@ -5,7 +5,7 @@ After=quake3@.service
 [Service]
 User=ec2-user
 Type=simple
-ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/ffamaps.txt
+ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/ffamaps.txt RCON_PASSWORD_CHANGE_ME 2796%i
 KillMode=control-group
 Restart=on-failure
 

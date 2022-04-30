@@ -30,10 +30,7 @@ LARGE_MAPS=($LARGE_MAPS)
 TOTAL_LARGE_MAPS=${#LARGE_MAPS[@]}
 IFS=$SAVEIFS   # Restore original IFS
 
-echo small maps: $TOTAL_SMALL_MAPS
-echo medium maps: $TOTAL_MEDIUM_MAPS
-echo large maps: $TOTAL_LARGE_MAPS
-paste <(printf "%s\n" "${SMALL_MAPS[@]}") <(printf "%s\n" "${MEDIUM_MAPS[@]}") <(printf "%s\n" "${LARGE_MAPS[@]}") | column -t
+paste <(printf "%s\n" "INDEX" "${!SMALL_MAPS[@]}")  <(printf "%s\n" "SMALL:$TOTAL_SMALL_MAPS" "${SMALL_MAPS[@]}") <(printf "%s\n" "MEDIUM:$TOTAL_MEDIUM_MAPS" "${MEDIUM_MAPS[@]}") <(printf "%s\n" "LARGE:$TOTAL_LARGE_MAPS" "${LARGE_MAPS[@]}") | column -t
 # https://stackoverflow.com/questions/6723426/looping-over-arrays-printing-both-index-and-value
 
 #### Attempt to load state. If file is missing, default to 0 and write state to file later.

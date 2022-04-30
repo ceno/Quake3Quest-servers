@@ -10,7 +10,6 @@ Q3TOURNEY3        0 4
 Q3DM3             0 4
 unitooldm4        0 4
 ik3dm2            0 4
-fff               0 4
 Q3DM5             0 4
 necro6            0 4
 yog3dm2           0 4
@@ -35,6 +34,7 @@ cpm19             4 7
 ospdm4            4 7
 JAPANDM           4 7
 ospdm11           4 7
+fff               4 7
 ktsdm3            4 7
 charonq2dm1v2     4 7
 auh3dm1           4 7

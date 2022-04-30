@@ -8,7 +8,7 @@ RCON_TIMEOUT=1
 
 rcon () {
   RCON_CMD="$1"
-  (printf "\xFF\xFF\xFF\xFFrcon $RCON_PASSWORD $RCON_CMD"; sleep $RCON_TIMEOUT) | ncat --udp 127.0.0.1 $SERVER_PORT
+  (printf "\xFF\xFF\xFF\xFFrcon $RCON_PASSWORD $RCON_CMD"; sleep $RCON_TIMEOUT) | nc -u -w1 127.0.0.1 $SERVER_PORT
 }
 
 #### Load map data

@@ -9,9 +9,10 @@ The map list format is based on
 algorithm is quite different. A minimal example wil look like this (see
 `ffamaps.txt` for full file)
 ```
+//MAP           MIN MAX
 cpm1a             0 4
-cpm15             4 7  // comment: http://www.map-url.com
-akutadm3          7 12
+cpm15             4 7
+akutadm3          7 12  // comment: https://ws.q3df.org/map/akutatdm3
 ```
 Only these 3 options are supported (i.e. `0 4`, `4 7` and `7 12`). Fraglimit is
 set per number of players. Timelimit is assumed to be constant, and relied upon

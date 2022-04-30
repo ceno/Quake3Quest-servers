@@ -24,7 +24,7 @@ for resetting the server back to an appropriate map when all players leave.
 sudo make install
 ```
 
-#### Reference dommands to control service
+#### Reference commands to control service
 
 ```
 sudo systemctl start auto-mapper@0

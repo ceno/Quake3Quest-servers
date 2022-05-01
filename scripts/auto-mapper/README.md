@@ -23,6 +23,8 @@ for resetting the server back to an appropriate map when all players leave.
 
 #### Installation
 
+Edit `auto-mapper@.service` with the RCON password to the server. Then
+
 ```
 sudo make install
 ```

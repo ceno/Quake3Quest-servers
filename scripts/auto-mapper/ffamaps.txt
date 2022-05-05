@@ -65,3 +65,4 @@ cpm26             7 12
 cpm9              7 12
 cpm18r            7 12
 ospdm12           7 12
+pro-bgmp6         7 12

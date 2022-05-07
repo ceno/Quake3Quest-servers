@@ -195,13 +195,7 @@ Resources:
                 cat /opt/ioquake3/baseq3/server0.cfg
                 cat /opt/ioquake3/baseq3/server1.cfg
                 cat /opt/ioquake3/baseq3/ctf.cfg
-                cat /opt/ioquake3/baseq3/1x1.cfg
                 cat /opt/ioquake3/baseq3/demo.cfg
-                cat /opt/ioquake3/baseq3/custom.cfg
-                cat /opt/ioquake3/baseq3/custom2.cfg
-                cat /opt/ioquake3/baseq3/custom3.cfg
-                cat /opt/ioquake3/baseq3/custom4.cfg
-                cat /opt/ioquake3/baseq3/custom5.cfg
 
                 RCON:
                 icecon 127.0.0.1:27960 "${RconPassword}"
@@ -229,265 +223,17 @@ Resources:
                 Reference server.cfg
                 - https://github.com/MarioVilas/ioquake3-server-docker/blob/master/q3a/baseq3/server.cfg
             /opt/ioquake3/baseq3/autoexec.cfg:
-              content: !Sub |
-                // This script is automatically run when the server starts.
-                // 1. Engine setings
-                set vm_game 2
-                set vm_cgame 2
-                set vm_ui 2
-                seta rate "12400"
-                seta snaps "40"
-                seta cl_packetdup "1"
-                set com_hunkmegs 256                     // maximum RAM used by the server
-                
-                // 2. Server settings
-                // Note: net_port and sv_hostname are set in separate cfgs to enable multiple servers per machine
-                //
-                set sv_master1 "13.36.227.32:27950"      // default is master.ioquake3.org
-                set sv_master2 ""                        // default is master.ioquake3.org
-                set dedicated 2                          // 1: dedicated server, but not announced | 2: dedicated server, announced
-                set sv_pure 0                            // 1: pure server, no altered pk3 files
-                set g_log ""                             // log file name
-                set logfile 0                            // 0:off 1:buffered 2:continuous 3:append to existing
-                set sv_allowDownload 1                   // enables downloading maps from server. Requires clientside config. See https://openarena.fandom.com/wiki/Manual/Automatic_downloading
-                set sv_dlURL ""                          // Tell clients to download pk3s from this URL instead of this server. Empty means use this server.
-                set sv_dlRate 4096                       // Maximum download rate offered to clients (kb/s)
-                set rconpassword "${RconPassword}"
-                sets g_needpass 0                        // To set a password set this to 1, and uncomment the sets below
-                //sets g_password "my-password"
-                set g_doWarmup 1                         // 0:no warmup 1:do warmup
-                set g_warmup 5                           // How long is the warm up (in seconds)
-                
-                // 3. Game settings (common across all modes)
-                //
-                set sv_maxclients 12                     // max. number of clients than can connect
-                set timelimit 30                         // Match timelimit
-                set g_motd "Enter the Slaughter-Verse!"
-                set g_allowvote 1                        // allow players to vote for map changes
-                set timelimit 0                          // time limit in minutes for all modes (0 for no limit)
-                // Weapon settings
-                set g_weaponrespawn 5                    // weapon respawn in seconds
-                set g_inactivity 120                     // kick players after being inactive (in seconds)
-                set g_forcerespawn 0                     // 0:player has to press primary button to respawn
-                // Bot settings
-                set bot_enable 1                         // allow bots on the server
-                set bot_nochat 1                         // 1: disable bot chatting (recommended!)
-                set g_spskill 4                          // default skill of bots [1-5]
-                set bot_minplayers 0                     // fills the server with bots to satisfy the minimum
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/autoexec.cfg'
             /opt/ioquake3/baseq3/server0.cfg:
-              content: !Sub |
-                set sv_hostname "${Server0Name}"
-                set net_port 27960
-                exec ffa.cfg
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/server0.cfg'
             /opt/ioquake3/baseq3/server1.cfg:
-              content: !Sub |
-                set sv_hostname "${Server1Name}"
-                set net_port 27961
-                exec demo.cfg
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/server1.cfg'
             /opt/ioquake3/baseq3/stress.cfg:
-              content: !Sub |
-                // Useful config options when stress testing the server.
-                // These facilitate upping player numbers by joining from PC clients and leaving them idle
-                set g_inactivity 0                       // do not kick inactive users
-                set g_forcerespawn 1                     // auto respawn
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/stress.cfg'
             /opt/ioquake3/baseq3/ctf.cfg:
-              content: !Sub |
-                set g_gametype 4                    //  0       Capture the Flag
-                set capturelimit 3                  // capture limit for CTF mode (0 for no limit)
-                set g_teamAutoJoin 1                // 0:goes into spectator mode, 1:auto joins a team
-                set g_teamForceBalance 1            // 0:free selection, 1:forces player to join weak team
-                set g_friendlyFire 0                // 1: friendly fire allowed in CTF mode
-
-                // 2x2
-                set s1  "map q3wxs1 ; set nextmap vstr s2"      // rails:  https://ws.q3df.org/map/q3wxs1
-                set s2  "map q3wcp16 ; set nextmap vstr s3"     // sharks: https://ws.q3df.org/map/q3wcp16
-                set s3  "map q3wxs2 ; set nextmap vstr s4"      // new:    https://ws.q3df.org/map/q3wxs2
-                set s4  "map q3ctf4 ; set nextmap vstr s1"      // space:  https://ws.q3df.org/map/q3wxs2
-
-                // 4x4+
-                set m1  "map q3wcp8 ; set nextmap vstr m2"      // castles: https://ws.q3df.org/map/q3wcp8
-                set m2  "map q3wcp6 ; set nextmap vstr m3"      // new:     https://ws.q3df.org/map/q3wcp6
-                set m3  "map q3wcp3 ; set nextmap vstr m4"      // foggy:   https://ws.q3df.org/map/q3wcp3
-                set m4  "map q3wcp1 ; set nextmap vstr m1"      // japan:   https://ws.q3df.org/map/q3wcp1
-                set m5  "map ospctf1 ; set nextmap vstr m1"     // new:     https://ws.q3df.org/map/ospctf1
-
-                vstr s1
-            /opt/ioquake3/baseq3/1x1.cfg:
-              content: !Sub |
-                set g_gametype 0                    //  0       Free for all
-                set fraglimit 10
-                set d1 "map Q3DM2 ; set nextmap vstr d2"
-                set d2 "map Q3DM3 ; set nextmap vstr d3"
-                set d3 "map Q3DM4 ; set nextmap vstr d4"
-                set d4 "map Q3DM5 ; set nextmap vstr d5"
-                set d5 "map Q3TOURNEY3 ; set nextmap vstr d6"
-                set d6 "map Q3TOURNEY5 ; set nextmap vstr d7"
-                set d7 "map Q3TOURNEY6 ; set nextmap vstr d1"
-                vstr d1                             // load first map in rotation
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/ctf.cfg'
             /opt/ioquake3/baseq3/demo.cfg:
-              content: !Sub |
-                set g_gametype 0
-                set fraglimit 20                    // frag limit for all modes (0 for no limit)
-                set d1 "map q3dm7 ; set nextmap vstr d2"
-                set d2 "map q3dm17 ; set nextmap vstr d3"
-                set d3 "map q3tourney2 ; set nextmap vstr d1"
-                vstr d1
-            /opt/ioquake3/baseq3/ffa.cfg:
-              content: !Sub |
-                set g_gametype 0
-                set fraglimit 20                    // frag limit for all modes (0 for no limit)
-                set d1 "map q3dm4 ; set nextmap vstr d2"
-                set d2 "map q3dm5 ; set nextmap vstr d3"
-                set d3 "map q3dm6 ; set nextmap vstr d4"
-                set d4 "map q3dm7 ; set nextmap vstr d5"
-                set d5 "map q3dm8 ; set nextmap vstr d6"
-                set d6 "map q3dm9 ; set nextmap vstr d7"
-                set d7 "map q3dm13 ; set nextmap vstr d8"
-                set d8 "map q3dm14 ; set nextmap vstr d9"
-                set d9 "map q3dm15 ; set nextmap vstr d10"
-                set d10 "map q3dm16 ; set nextmap vstr d11"
-                set d11 "map q3dm17 ; set nextmap vstr d1"
-                vstr d1
-            /opt/ioquake3/baseq3/custom.cfg:
-              content: !Sub |
-                set g_gametype 0
-                set fraglimit 20
-                set d1 "map hub3aeroq3 ; set nextmap vstr d2"   // https://ws.q3df.org/map/hub3aeroq3/
-                set d2 "map hub3tourney1 ; set nextmap vstr d3" // https://ws.q3df.org/map/hub3tourney1/
-                set d3 "map cpm1a ; set nextmap vstr d4"        // https://ws.q3df.org/map/cpm1a
-                set d4 "map ztn3dm1 ; set nextmap vstr d5"      // https://ws.q3df.org/map/ztn3dm1/
-                set d5 "map alkdm06 ; set nextmap vstr d6"      // https://ws.q3df.org/map/alkdm06/
-                set d6 "map bal3dm3 ; set nextmap vstr d1"      // https://ws.q3df.org/map/bal3dm3/
-                vstr d1
-            /opt/ioquake3/baseq3/custom2.cfg:
-              content: !Sub |
-                // Custom set of maps for experimentation
-                set g_gametype 0
-                set fraglimit 20
-                set d1 "map hub3aeroq3 ; set nextmap vstr d2"     // https://ws.q3df.org/map/hub3aeroq3/
-                set d2 "map hub3tourney1 ; set nextmap vstr d3"   // https://ws.q3df.org/map/hub3tourney1/
-                set d3 "map cpm1a ; set nextmap vstr d4"          // https://ws.q3df.org/map/cpm1a
-                set d4 "map ztn3dm1 ; set nextmap vstr d5"        // https://ws.q3df.org/map/ztn3dm1/
-                set d5 "map alkdm06 ; set nextmap vstr d6"        // https://ws.q3df.org/map/alkdm06/
-                set d6 "map bal3dm3 ; set nextmap vstr d7"        // https://ws.q3df.org/map/bal3dm3/
-                set d7 "map simetrik ; set nextmap vstr d8"       // https://ws.q3df.org/map/simetrik/
-                set d8 "map klzdeadly ; set nextmap vstr d9"      // https://ws.q3df.org/map/klzdeadly/
-                set d9 "map charon3dm8 ; set nextmap vstr d10"    // https://ws.q3df.org/map/charon3dm8/
-                set d10 "map auh3dm1; set nextmap vstr d11"       // https://ws.q3df.org/map/auh3dm1/
-                set d11 "map akutadm1; set nextmap vstr d12"      // https://ws.q3df.org/map/akutadm1/
-                set d12 "map akutadm2; set nextmap vstr d13"      // https://ws.q3df.org/map/akutadm2/
-                set d13 "map akutadm3; set nextmap vstr d14"      // https://ws.q3df.org/map/akutadm3/
-                set d14 "map charonq2dm1v2; set nextmap vstr d15" // https://ws.q3df.org/map/charonq2dm1v2/
-                set d15 "map tabd2map01; set nextmap vstr d1"     // https://ws.q3df.org/map/tabd2map01/
-                vstr d1
-            /opt/ioquake3/baseq3/custom3.cfg:
-              content: !Sub |
-                // 'LvL Pack - The cream off the top' from https://lvlworld.com/review/id:664
-                set g_gametype 0
-                set fraglimit 20
-                set d1 "map natedm2 ; set nextmap vstr d2"       // https://lvlworld.com/review/id:482
-                set d2 "map ik3dm1 ; set nextmap vstr d3"        // https://lvlworld.com/review/id:20
-                set d3 "map JAPANDM ; set nextmap vstr d4"       // https://lvlworld.com/review/id:44
-                set d4 "map mrcq3t3 ; set nextmap vstr d5"       // https://lvlworld.com/review/id:428
-                set d5 "map ztn3dm2 ; set nextmap vstr d6"       // https://lvlworld.com/review/id:107
-                set d6 "map lun3dm2 ; set nextmap vstr d7"       // https://lvlworld.com/review/id:423
-                set d7 "map bal3dm2 ; set nextmap vstr d8"       // https://lvlworld.com/review/id:429
-                set d8 "map ztn3dm1 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:203
-                set d9 "map auh3dm2 ; set nextmap vstr d10"       // https://lvlworld.com/review/id:501
-                set d10 "map cpm8 ; set nextmap vstr d11"        // https://lvlworld.com/review/id:525
-                set d11 "map auh3dm1 ; set nextmap vstr d12"     // https://lvlworld.com/review/id:614
-                set d12 "map fff ; set nextmap vstr d13"         // https://lvlworld.com/review/id:551
-                set d13 "map devdm3 ; set nextmap vstr d14"      // https://lvlworld.com/review/id:591
-                set d14 "map d3xf1 ; set nextmap vstr d15"       // https://lvlworld.com/review/id:663
-                set d15 "map tig_den ; set nextmap vstr d1"      // https://lvlworld.com/review/id:307
-                vstr d1
-            /opt/ioquake3/baseq3/custom4.cfg:
-              content: !Sub |
-                // 'LvL & PlanetQuake Pack 2: The Top Peg' from https://lvlworld.com/download/id:929
-                // KtSdm3 (aka H2SO4) and saiko_tourney1a missing due to performance problems
-                set g_gametype 0
-                set fraglimit 20
-                set lvlpq1 "map yog3dm2 ; set nextmap vstr lvlpq2"         // https://lvlworld.com/review/id:585
-                set lvlpq2 "map bal3dm3 ; set nextmap vstr lvlpq3"         // https://lvlworld.com/review/id:670
-                set lvlpq3 "map alkdm06 ; set nextmap vstr lvlpq4"         // https://lvlworld.com/review/id:689
-                set lvlpq4 "map cpm1a ; set nextmap vstr lvlpq5"           // https://lvlworld.com/review/id:701
-                set lvlpq5 "map cpm11 ; set nextmap vstr lvlpq6"           // https://lvlworld.com/review/id:766
-                set lvlpq6 "map qxtourney1 ; set nextmap vstr lvlpq7"      // https://lvlworld.com/review/id:784
-                set lvlpq7 "map hub3dm1 ; set nextmap vstr lvlpq8"         // https://lvlworld.com/review/id:822
-                set lvlpq8 "map hub3aeroq3 ; set nextmap vstr lvlpq9"     // https://lvlworld.com/review/id:836
-                set lvlpq9  "map bal3dm4 ; set nextmap vstr lvlpq10"       // https://lvlworld.com/review/id:857
-                set lvlpq10 "map unitooldm4 ; set nextmap vstr lvlpq1"     // https://lvlworld.com/review/id:869
-                vstr lvlpq1
-            /opt/ioquake3/baseq3/custom5.cfg:
-              content: !Sub |
-                // 'LvL Q3A - 20 Years' from https://lvlworld.com/review/id:2401
-                // Some maps missing due to performance problems
-                set g_gametype 0
-                set fraglimit 20
-                set d1 "map chiropteraDM ; set nextmap vstr d2"   // https://lvlworld.com/review/id:1243
-                set d2 "map auh3dm1 ; set nextmap vstr d3"        // https://lvlworld.com/review/id:614
-                set d3 "map d3xf1 ; set nextmap vstr d4"          // https://lvlworld.com/review/id:663
-                set d4 "map ik3dm2 ; set nextmap vstr d5"         // https://lvlworld.com/review/id:994
-                set d5 "map fr3dm1 ; set nextmap vstr d6"         // https://lvlworld.com/review/id:637
-                set d6 "map jof3dm2 ; set nextmap vstr d7"        // https://lvlworld.com/review/id:1757
-                set d7 "map focal_p132 ; set nextmap vstr d8"     // https://lvlworld.com/review/id:2084
-                set d8 "map hub3dm1 ; set nextmap vstr d9"       // https://lvlworld.com/review/id:822
-                set d9 "map hub3aeroq3a ; set nextmap vstr d1"  // https://lvlworld.com/review/id:1717
-                vstr d1
-            /opt/ioquake3/baseq3/custom6.cfg:
-              content: !Sub |
-                // CPMP map pack Part I
-                // Removed because too big: cpm13, cpm18r, cpm20, cpm21
-                // Removed because bad perf: cpm19, cpm17 (love :-( )
-                set g_gametype 0
-                set fraglimit 20
-                set d1 "map cpm10 ; set nextmap vstr d2" // OK
-                set d2 "map cpm11 ; set nextmap vstr d3" // ok
-                set d3 "map cpm12 ; set nextmap vstr d4" // OK known quantity - this is actually dismemberment?
-                set d4 "map cpm14 ; set nextmap vstr d5" // LOVE frame drops - needs testing in group. felt ok
-                set d5 "map cpm15 ; set nextmap vstr d6" // frame drops - needs testing felt ok
-                set d6 "map cpm16 ; set nextmap vstr d7" // LOVE OK
-                set d7 "map cpm1a ; set nextmap vstr d8" // OK - known quantity, the one that's kind of ugly but fun
-                set d8 "map cpm2 ; set nextmap vstr d1"  // OK
-                vstr d1
-            /opt/ioquake3/baseq3/custom7.cfg:
-              content: !Sub |
-                // CPMP map pack Part II
-                // Removed because too big cpm25, cpm26, cpm27, cpm4a, cpma3, cpm9 (also bad perf)
-                // Removed because bad perf cpm23
-                // Removed because too small cpm7
-                set g_gametype 0
-                set fraglimit 20
-                set d1  "map cpm22 ; set nextmap vstr d2" // OK aerowalk with a q2 skin.dont like it
-                set d2  "map cpm23 ; set nextmap vstr d3" // BAD PERF LOVE but frame drops. Great for 1x1
-                set d3  "map cpm24 ; set nextmap vstr d4" // perfect
-                set d4  "map cpm28 ; set nextmap vstr d5" // OK but what is this cartooon shit doing here?
-                set d5  "map cpm29 ; set nextmap vstr d6" // OK
-                set d6  "map cpm3 ; set nextmap vstr d7"  // perfect
-                set d7  "map cpm6 ; set nextmap vstr d8" // perfect
-                set d8  "map cpm8 ; set nextmap vstr d9" // OK known quantity - that one that's quite ugly
-                set d9  "map cpm9 ; set nextmap vstr d1" // Bad perf with 8 ppl! LOVE LOVE but TOO BIG 8 minimum OK
-                vstr d2
-            /opt/ioquake3/baseq3/osp.cfg:
-              content: !Sub |
-                // Classic OSP map pack
-                // https://ws.q3df.org/map/ospdm1/
-                set g_gametype 0
-                set fraglimit 20
-
-                set d1  "map ospdm1 ; set nextmap vstr d2"
-                set d2  "map ospdm2 ; set nextmap vstr d3"
-                set d3  "map ospdm3 ; set nextmap vstr d4"
-                set d4  "map ospdm4 ; set nextmap vstr d5"
-                set d5  "map ospdm5 ; set nextmap vstr d6"
-                set d6  "map ospdm6 ; set nextmap vstr d7"
-                set d7  "map ospdm7 ; set nextmap vstr d8"
-                set d8  "map ospdm8 ; set nextmap vstr d9"
-                set d9  "map ospdm9 ; set nextmap vstr d10"
-                set d10 "map ospdm10 ; set nextmap vstr d11"
-                set d11 "map ospdm11 ; set nextmap vstr d12"
-                set d12 "map ospdm12 ; set nextmap vstr d1"
-                vstr d1
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/demo.cfg'
             /run/systemd/system/quake3@.service:
               content: !Sub |
                 [Unit]
@@ -595,6 +341,11 @@ Resources:
             # Mount EFS to keep logs
             mount -t efs ${FileSystem} /mnt
             chown -R ec2-user:ec2-user /mnt
+
+            # Patch in server config parameters
+            sed -i -e "s/RCON_PASSWORD/${RconPassword}/g" /opt/ioquake3/baseq3/autoexec.cfg
+            sed -i -e "s/SERVER0_NAME/${Server0Name}/g" /opt/ioquake3/baseq3/server0.cfg
+            sed -i -e "s/SERVER1_NAME/${Server1Name}/g" /opt/ioquake3/baseq3/server1.cfg
 
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0

@@ -121,6 +121,33 @@ Resources:
       Roles:
         -
           !Ref Ec2InstanceRole
+
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+        - Key: Name
+          Value: Quake3Quest
+  FileSystemSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that allows NFS access from the teamcity server
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref InstanceSecurityGroup
+  FileSystemMountTarget0:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SecurityGroups:
+        - !Ref FileSystemSecurityGroup
+      SubnetId: !Select [0, Ref: Subnets]
+
   AutoScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
@@ -466,22 +493,41 @@ Resources:
                 [Unit]
                 Description=Quake3@%i
                 After=network.target
+                RequiresMountsFor=/mnt
                 
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded.arm64 +exec server%i.cfg
-                KillMode=process
+                ExecStart=/opt/ioquake3/ioq3ded server%i
+                KillMode=control-group
                 Restart=on-failure
-                StandardOutput=null
-                StandardError=null
-                
+
+                [Install]
+                WantedBy=multi-user.target
+            /run/systemd/system/auto-mapper@.service:
+              content: !Sub |
+                [Unit]
+                Description=Auto-mapper on port 2796%i
+                After=quake3@.service
+
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/ffamaps.txt "${RconPassword}" 2796%i
+                KillMode=control-group
+                Restart=on-failure
+
                 [Install]
                 WantedBy=multi-user.target
             /etc/systemd/journald.conf:
               content: !Sub |
                 [Journal]
                 SystemMaxUse=50M
+            /opt/ioquake3/ioq3ded:
+              mode: '000755'
+              content: !Sub |
+                #!/bin/bash
+                /opt/ioquake3/ioq3ded.arm64 +exec $@ 2>&1 >/dev/null | gawk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }; fflush(stdout)' | tee -a /mnt/$1.log
             /usr/bin/icecon:
               mode: '000755'
               source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
@@ -490,9 +536,6 @@ Resources:
             /usr/bin/auto-mapper:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'
-            /run/systemd/system/auto-mapper@.service:
-              mode: '000644'
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper%40.service'
     Properties:
       LaunchTemplateData: 
         KeyName: !Ref KeyName
@@ -529,7 +572,7 @@ Resources:
             [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Boot" -F description="${Server0Name} `curl -s http://169.254.169.254/latest/meta-data/instance-type`/${AWS::Region}/${ElasticIp}:27960"
 
             # Begin actual OS initialisation
-            yum install -y vim htop wget nc aws-cli aws-cfn-bootstrap
+            yum install -y vim htop wget nmap-ncat unzip amazon-efs-utils aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
 
             # Clean yum to free up 200MB of disk space
@@ -549,9 +592,13 @@ Resources:
             # Restart journald so it picks up the 50M limit for log size
             systemctl restart systemd-journald
 
+            # Mount EFS to keep logs
+            mount -t efs ${FileSystem} /mnt
+            chown -R ec2-user:ec2-user /mnt
+
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0
-            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1
+            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now auto-mapper@1
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

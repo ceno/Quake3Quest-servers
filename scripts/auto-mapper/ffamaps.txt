@@ -55,7 +55,6 @@ ospdm8            4 7
 ospdm9            4 7
 cpm11             4 7
 cpm14             4 7
-cpm15             4 7
 cpm2              4 7
 akutadm3          7 12
 lsdm1             7 12

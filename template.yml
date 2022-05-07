@@ -152,7 +152,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       VPCZoneIdentifier: !Ref Subnets
-      DesiredCapacity: 0
+      DesiredCapacity: 1
       MinSize: 0
       MaxSize: 1
       MixedInstancesPolicy:

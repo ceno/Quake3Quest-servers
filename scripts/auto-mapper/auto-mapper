@@ -3,7 +3,7 @@ LOGFILE="$1"
 MAPLIST="$2"
 RCON_PASSWORD="$3"
 SERVER_PORT="$4"
-STATE_FILE="/tmp/state.txt"
+STATE_FILE="/tmp/state-$4.txt"
 RCON_TIMEOUT=1
 
 rcon () {

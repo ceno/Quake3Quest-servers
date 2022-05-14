@@ -1,0 +1,13 @@
+q3tourney2        0 4
+jof3dm2           0 4 // playable
+q3dm17            0 4
+q3dm7             4 7
+pom_bots          4 7 // basically perfect
+ktsdm3            4 7 // perfect
+estatica          4 7 // perfect
+bloodcovenant     4 7 // basically perfect
+bal3dm3           4 7 // perfect
+ospdm2            4 7 // basically perfect
+cpm18r            7 12 // perfect
+ospdm12           7 12 // playable
+pro-bgmp6         7 12 // perfect

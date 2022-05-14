@@ -279,6 +279,8 @@ Resources:
               source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
             /opt/ioquake3/ffamaps.txt:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/ffamaps.txt'
+            /opt/ioquake3/demomaps.txt:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/demomaps.txt'
             /usr/bin/auto-mapper:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'

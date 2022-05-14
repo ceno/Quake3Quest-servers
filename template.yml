@@ -265,6 +265,21 @@ Resources:
 
                 [Install]
                 WantedBy=multi-user.target
+            /run/systemd/system/demo-mapper@.service:
+              content: !Sub |
+                [Unit]
+                Description=Auto-mapper set to run demo maps on port 2796%i
+                After=quake3@.service
+
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/demomaps.txt "${RconPassword}" 2796%i
+                KillMode=control-group
+                Restart=on-failure
+
+                [Install]
+                WantedBy=multi-user.target
             /etc/systemd/journald.conf:
               content: !Sub |
                 [Journal]
@@ -351,7 +366,7 @@ Resources:
 
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0
-            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1
+            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now demo-mapper@1
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

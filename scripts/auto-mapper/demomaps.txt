@@ -1,9 +1,10 @@
+q3dm17            0 4
 q3tourney2        0 4
 jof3dm2           0 4 // playable
-q3dm17            0 4
-q3dm7             4 7
+q3dm7             0 4 // this one only works when bot_minplayers=4
 pom_bots          4 7 // basically perfect
 ktsdm3            4 7 // perfect
+q3dm7             4 7
 estatica          4 7 // perfect
 bloodcovenant     4 7 // basically perfect
 bal3dm3           4 7 // perfect

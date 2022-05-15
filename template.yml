@@ -371,3 +371,6 @@ Outputs:
   ElasticIp:
     Value: !Ref ElasticIp
     Description: The elastic IP to be associated with the instance
+  ASG:
+    Value: !Ref AutoScalingGroup
+    Description: The elastic IP to be associated with the instance

@@ -109,7 +109,7 @@ t2.micro	$0.0040 per Hour
 # Custom maps
 
 ```
-# Custom1 and custom2 
+# Custom1 and custom2 (90MB)
 wget https://ws.q3df.org/maps/downloads/hub3aeroq3.pk3
 wget https://ws.q3df.org/maps/downloads/hub3tourney1.pk3
 wget https://ws.q3df.org/maps/downloads/map_cpm1a.pk3
@@ -128,10 +128,11 @@ wget https://ws.q3df.org/maps/downloads/akutadm2.pk3
 wget https://ws.q3df.org/maps/downloads/akutadm3.pk3
 wget https://ws.q3df.org/maps/downloads/map-charonq2dm1v2.pk3
 wget https://ws.q3df.org/maps/downloads/tabd2map01.pk3
+wget https://ws.q3df.org/maps/downloads/dubneoc.pk3
 # Requires manual unzipping:
 wget https://lvlworld.fast-stable-secure.net/a-f/akutatourney8.zip
 
-# custom3 - The cream off the top
+# custom3 - The cream off the top (~35MB)
 # See https://lvlworld.com/review/id:664
 wget https://ws.q3df.org/maps/downloads/map-natedm2.pk3
 wget https://ws.q3df.org/maps/downloads/ik3dm1.pk3
@@ -150,7 +151,7 @@ wget https://ws.q3df.org/maps/downloads/devdm3.pk3
 wget https://ws.q3df.org/maps/downloads/d3xf1.pk3
 wget https://ws.q3df.org/maps/downloads/tig_den.pk3
 
-# custom4 - The Top Peg
+# custom4 - The Top Peg (25MB)
 # See https://lvlworld.com/download/id:929 
 wget https://ws.q3df.org/maps/downloads/yog3dm2.pk3
 wget https://ws.q3df.org/maps/downloads/Bal3dm3.pk3
@@ -162,7 +163,7 @@ wget https://ws.q3df.org/maps/downloads/saiko_tourney1a.pk3
 wget https://ws.q3df.org/maps/downloads/hub3dm1.pk3
 wget https://ws.q3df.org/maps/downloads/hub3aeroq3.pk3
 wget https://ws.q3df.org/maps/downloads/Bal3dm4.pk3
-# custom5 - 20 Years
+# custom5 - 20 Years (25MB)
 # See https://lvlworld.com/review/id:2401
 wget https://ws.q3df.org/maps/downloads/chiropteraDM.pk3
 wget https://ws.q3df.org/maps/downloads/auh3dm1.pk3
@@ -173,6 +174,11 @@ wget https://ws.q3df.org/maps/downloads/jof3dm2.pk3
 wget https://ws.q3df.org/maps/downloads/focal_p132.pk3
 wget https://ws.q3df.org/maps/downloads/hub3dm1.pk3
 wget https://ws.q3df.org/maps/downloads/hub3aeroq3a.pk3
+
+# ctf selection
+wget https://ws.q3df.org/maps/downloads/q3wpak1.pk3
+wget https://ws.q3df.org/maps/downloads/q3wpak0.pk3
+wget https://ws.q3df.org/maps/downloads/q3wpak4.pk3
 ```
 
 # Admin tips and tricks
@@ -195,9 +201,9 @@ du -h -s *
 ```
 List files in current directory
 ```
-```
-
 du -h -s * | sort -h
 /usr/lib/locale
 
 date && df -h && du -h -s /* | sort -h
+```
+

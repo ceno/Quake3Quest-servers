@@ -14,8 +14,8 @@ rcon () {
 #### Load map data
 SMALL_THRESHOLD=4
 MEDIUM_THRESHOLD=7
-#players:  0  1  2  3  4  5  6  7  8  9  10 11 12
-FRAGLIMITS=(10 10 10 15 20 20 25 25 25 30 30 30 35)
+#players:   0  1  2  3  4  5  6  7  8  9  10 11 12 13
+FRAGLIMITS=(10 10 10 15 20 20 25 25 25 30 30 30 30 30)
 MAPLIST_MINUS_COMMENTS=$(sed -e "s/\s*\/\/.*//g" "$MAPLIST")
 SMALL_MAPS=$(echo "$MAPLIST_MINUS_COMMENTS"  | grep -o -E ".*\s[0-4]$" | grep -o -E "^[^ ]*")
 MEDIUM_MAPS=$(echo "$MAPLIST_MINUS_COMMENTS" | grep -o -E ".*\s[5-7]$" | grep -o -E "^[^ ]*")

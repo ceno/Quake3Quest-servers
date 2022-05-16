@@ -1,3 +1,4 @@
+//map name      min max (players)
 bal3dm2           0 4
 q3tourney2        0 4
 tig_den           0 4

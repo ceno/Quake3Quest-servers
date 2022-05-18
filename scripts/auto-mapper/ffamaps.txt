@@ -1,16 +1,18 @@
 //map name      min max (players)
 q3dm2             0 4    // https://ws.q3df.org/map/q3dm2
+monkeymadness     0 4    // https://ws.q3df.org/map/monkeymadness
 q3dm3             0 4    // https://ws.q3df.org/map/q3dm3
 tig_den           0 4    // https://ws.q3df.org/map/tig_den
 q3dm4             0 4    // https://ws.q3df.org/map/q3dm4
+bbq3dm2           0 4    // https://ws.q3df.org/map/bbq3dm2
 q3dm5             0 4    // https://ws.q3df.org/map/q3dm5
 hub3aeroq3        0 4    // https://ws.q3df.org/map/hub3aeroq3
 q3tourney2        0 4    // https://ws.q3df.org/map/q3tourney2
-storm3tourney6    0 4    // 
+storm3tourney6    0 4    // https://ws.q3df.org/map/storm3tourney6
 q3tourney3        0 4    // https://ws.q3df.org/map/q3tourney3
 ik3dm2            0 4    // https://ws.q3df.org/map/ik3dm2
 q3tourney5        0 4    // https://ws.q3df.org/map/q3tourney5
-q3dm19            0 4
+q3dm19            0 4    // https://ws.q3df.org/map/q3dm19
 jof3dm2           0 4    // https://ws.q3df.org/map/jof3dm2
 q3dm6             4 7    // https://ws.q3df.org/map/q3dm6
 JAPANDM           4 7    // https://ws.q3df.org/map/JAPANDM

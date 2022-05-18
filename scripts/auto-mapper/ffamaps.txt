@@ -6,25 +6,25 @@ q3dm4             0 4    // https://ws.q3df.org/map/q3dm4
 q3dm5             0 4    // https://ws.q3df.org/map/q3dm5
 hub3aeroq3        0 4    // https://ws.q3df.org/map/hub3aeroq3
 q3tourney2        0 4    // https://ws.q3df.org/map/q3tourney2
+storm3tourney6    0 4    // 
 q3tourney3        0 4    // https://ws.q3df.org/map/q3tourney3
 ik3dm2            0 4    // https://ws.q3df.org/map/ik3dm2
 q3tourney5        0 4    // https://ws.q3df.org/map/q3tourney5
-q3tourney6        0 4    // https://ws.q3df.org/map/q3tourney6
+q3dm19            0 4
 jof3dm2           0 4    // https://ws.q3df.org/map/jof3dm2
 q3dm6             4 7    // https://ws.q3df.org/map/q3dm6
-q3dm7             4 7    // https://ws.q3df.org/map/q3dm7
 JAPANDM           4 7    // https://ws.q3df.org/map/JAPANDM
-q3dm8             4 7    // https://ws.q3df.org/map/q3dm8
-q3dm9             4 7    // https://ws.q3df.org/map/q3dm9
+q3dm7             4 7    // https://ws.q3df.org/map/q3dm7
 hub3tourney1      4 7    // https://ws.q3df.org/map/hub3tourney1
-q3dm13            4 7    // https://ws.q3df.org/map/q3dm13
-q3dm14            4 7    // https://ws.q3df.org/map/q3dm14
+q3dm8             4 7    // https://ws.q3df.org/map/q3dm8
 charonq2dm1v2     4 7    // https://ws.q3df.org/map/charonq2dm1v2
+q3dm13            4 7    // https://ws.q3df.org/map/q3dm13
 q3dm15            4 7    // https://ws.q3df.org/map/q3dm15
+ztn3dm1           4 7    // https://ws.q3df.org/map/ztn3dm1
+q3dm14            4 7    // https://ws.q3df.org/map/q3dm14
 q3dm16            4 7    // https://ws.q3df.org/map/q3dm16
 ktsdm3            4 7    // https://ws.q3df.org/map/ktsdm3
 q3dm17            4 7    // https://ws.q3df.org/map/q3dm17
-q3dm18            4 7    // https://ws.q3df.org/map/q3dm17
 mkvdv             4 7    // https://ws.q3df.org/map/mkvdv
 q3dm19            4 7    // https://ws.q3df.org/map/q3dm17
 q3tourney4        4 7    // https://ws.q3df.org/map/q3dm17

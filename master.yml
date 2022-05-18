@@ -81,7 +81,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       VPCZoneIdentifier: !Ref Subnets
-      DesiredCapacity: 0
+      DesiredCapacity: 1
       MinSize: 0
       MaxSize: 1
       MixedInstancesPolicy:
@@ -153,7 +153,7 @@ Resources:
         InstanceType: t4g.nano
         # The option below is really important! The alternative is for it to be unlimited, which might incur extra costs on top of the hourly rate.
         CreditSpecification:
-          CpuCredits: standard 
+          CpuCredits: unlimited
         BlockDeviceMappings:
           - DeviceName: /dev/xvda
             Ebs:

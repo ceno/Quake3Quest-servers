@@ -28,7 +28,6 @@ q3dm16            4 7    // https://ws.q3df.org/map/q3dm16
 ktsdm3            4 7    // https://ws.q3df.org/map/ktsdm3
 q3dm17            4 7    // https://ws.q3df.org/map/q3dm17
 mkvdv             4 7    // https://ws.q3df.org/map/mkvdv
-q3dm19            4 7    // https://ws.q3df.org/map/q3dm17
 q3tourney4        4 7    // https://ws.q3df.org/map/q3dm17
 fff               4 7    // https://ws.q3df.org/map/fff
 q3dm11            7 12   // https://ws.q3df.org/map/akutadm3 

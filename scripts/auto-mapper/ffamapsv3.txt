@@ -25,7 +25,6 @@ alkdm06           0 4    // https://ws.q3df.org/map/alkdm06
 devdm3            0 4    // https://ws.q3df.org/map/devdm3
 charon3dm8        0 4    // https://ws.q3df.org/map/charon3dm8
 simetrik          0 4    // https://ws.q3df.org/map/simetrik
-Q3TOURNEY5        0 4    // https://ws.q3df.org/map/Q3TOURNEY5
 d3xf1             0 4    // https://ws.q3df.org/map/d3xf1
 jof3dm2           0 4    // https://ws.q3df.org/map/jof3dm2
 ospdm10           0 4    // https://ws.q3df.org/map/ospdm10

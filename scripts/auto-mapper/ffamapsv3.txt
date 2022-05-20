@@ -74,8 +74,10 @@ cpm11             4 7    // https://ws.q3df.org/map/cpm11
 cpm14             4 7    // https://ws.q3df.org/map/cpm14
 cpm2              4 7    // https://ws.q3df.org/map/cpm2
 aepyra            4 7    // https://ws.q3df.org/map/aepyra
+q3dm11            7 12   // https://ws.q3df.org/map/q3dm11 
 akutadm3          7 12   // https://ws.q3df.org/map/akutadm3 
 lsdm1             7 12   // https://ws.q3df.org/map/lsdm1    
+q3dm12            7 12   // https://ws.q3df.org/map/q3dm12
 cpm27             7 12   // https://ws.q3df.org/map/cpm27    
 cpm26             7 12   // https://ws.q3df.org/map/cpm26    
 cpm18r            7 12   // https://ws.q3df.org/map/cpm18r   

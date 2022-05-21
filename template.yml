@@ -284,6 +284,26 @@ Resources:
               content: !Sub |
                 [Journal]
                 SystemMaxUse=50M
+            /etc/logrotate.conf:
+              content: !Sub |
+                daily
+                rotate 1
+                create
+                dateext
+                compress
+                include /etc/logrotate.d
+                /var/log/wtmp {
+                    monthly
+                    create 0664 root utmp
+                        minsize 1M
+                    rotate 1
+                }
+                /var/log/btmp {
+                    missingok
+                    monthly
+                    create 0600 root utmp
+                    rotate 1
+                }
             /opt/ioquake3/ioq3ded:
               mode: '000755'
               content: !Sub |

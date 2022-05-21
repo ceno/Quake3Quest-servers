@@ -296,6 +296,11 @@ Resources:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/ffamaps.txt'
             /opt/ioquake3/demomaps.txt:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/demomaps.txt'
+            /opt/ioquake3/leaderboard.sh:
+              mode: '000755'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard.sh'
+            /etc/cron.d/leaderboard.cron:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard.cron'
             /usr/bin/auto-mapper:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'

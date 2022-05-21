@@ -363,9 +363,6 @@ Resources:
             yum install -y vim htop wget nmap-ncat unzip amazon-efs-utils aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
 
-            # Clean yum to free up 200MB of disk space
-            yum clean all
-            rm -rf /var/cache/yum
 
             # Associate elastic IP manually to avoid the need for a load balancer
             aws configure set region ${AWS::Region}
@@ -388,6 +385,16 @@ Resources:
             sed -i -e "s/RCON_PASSWORD/${RconPassword}/g" /opt/ioquake3/baseq3/autoexec.cfg
             sed -i -e "s/SERVER0_NAME/${Server0Name}/g" /opt/ioquake3/baseq3/server0.cfg
             sed -i -e "s/SERVER1_NAME/${Server1Name}/g" /opt/ioquake3/baseq3/server1.cfg
+
+            # Disk space reduction measures
+            # Clean yum cache (200MB)
+            yum clean all
+            rm -rf /var/cache/yum
+            # Remove unused locales (100MB)
+            # https://unix.stackexchange.com/questions/90006/how-do-i-reduce-the-size-of-locale-archive
+            localedef --list-archive | grep -v -i ^en | xargs localedef --delete-from-archive
+            mv /usr/lib/locale/locale-archive /usr/lib/locale/locale-archive.tmpl
+            build-locale-archive
 
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0

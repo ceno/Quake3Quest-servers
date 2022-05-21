@@ -24,7 +24,7 @@ download_map () {
   #stdout=$(wget https://ws.q3df.org/maps/downloads/${map}.pk3)
   case $map in
       ktdsm3) wget https://ws.q3df.org/maps/downloads/${map}v2.pk3  ;;
-      aepyra|qfraggel3ffa|s20dm4) wget https://ws.q3df.org/maps/downloads/map-${map}.pk3  ;;
+      aepyra|qfraggel3ffa|s20dm4|monkeymadness|bbq3dm2) wget https://ws.q3df.org/maps/downloads/map-${map}.pk3  ;;
       cpm*) wget https://ws.q3df.org/maps/downloads/map_${map}.pk3  ;;
       *) wget https://ws.q3df.org/maps/downloads/${map}.pk3  ;;
   esac

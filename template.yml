@@ -290,7 +290,7 @@ Resources:
             /etc/logrotate.conf:
               content: !Sub |
                 daily
-                rotate 1
+                rotate 2
                 create
                 dateext
                 compress

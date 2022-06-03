@@ -55,7 +55,7 @@ ospdm11           4 7    // https://ws.q3df.org/map/ospdm11
 fff               4 7    // https://ws.q3df.org/map/fff
 q3dm14            4 7    // https://ws.q3df.org/map/q3dm14
 ktsdm3            4 7    // https://ws.q3df.org/map/ktsdm3
-charonq2dm1v2     4 7    // https://ws.q3df.org/map/charonq2dm1v2
+ospdm1            4 7    // https://ws.q3df.org/map/ospdm1
 q3dm15            4 7    // https://ws.q3df.org/map/q3dm15
 auh3dm1           4 7    // https://ws.q3df.org/map/auh3dm1
 estatica          4 7    // https://ws.q3df.org/map/estatica

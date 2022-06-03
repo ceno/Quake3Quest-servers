@@ -363,7 +363,7 @@ Resources:
             [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Boot" -F description="${Server0Name} `curl -s http://169.254.169.254/latest/meta-data/instance-type`/${AWS::Region}/${ElasticIp}:27960"
 
             # Begin actual OS initialisation
-            yum install -y vim htop wget nmap-ncat unzip amazon-efs-utils aws-cli aws-cfn-bootstrap
+            yum install -y vim htop wget jq nmap-ncat unzip amazon-efs-utils aws-cli aws-cfn-bootstrap
             /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
 
 

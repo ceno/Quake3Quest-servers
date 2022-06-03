@@ -45,8 +45,8 @@ while read line
 do
   if [[ "$line" == *"NEXT"* ]] || [[ "$line" == *"Exit: Fraglimit hit"* ]] || [[ "$line" == *"Exit: Timelimit hit"* ]]; then
     echo "$line"
-    echo  TRIGGER DETECTED: Now waiting 6 seconds
-    sleep 6
+    echo  TRIGGER DETECTED: Now waiting 5 seconds
+    sleep 5
     # Load players
     numberOfLines=$(rcon "status" | wc -l)
     numberOfPlayers=$((numberOfLines-5))

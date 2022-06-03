@@ -371,23 +371,12 @@ Resources:
             aws configure set region ${AWS::Region}
             aws ec2 associate-address --instance-id `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
 
-            # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
-            aws configure set default.s3.max_concurrent_requests 1
-            aws s3 cp s3://${BucketName}/ /opt/ioquake3/ --exclude baseq3/pak0.pk3 --only-show-errors --recursive
-            aws s3 cp s3://${BucketName}/baseq3/pak0.pk3 /opt/ioquake3/baseq3/pak0.pk3 --only-show-errors
-            chmod +x /opt/ioquake3/ioq3ded.arm64
-
             # Restart journald so it picks up the 50M limit for log size
             systemctl restart systemd-journald
 
             # Mount EFS to keep logs
             mount -t efs ${FileSystem} /mnt
             chown -R ec2-user:ec2-user /mnt
-
-            # Patch in server config parameters
-            sed -i -e "s/RCON_PASSWORD/${RconPassword}/g" /opt/ioquake3/baseq3/autoexec.cfg
-            sed -i -e "s/SERVER0_NAME/${Server0Name}/g" /opt/ioquake3/baseq3/server0.cfg
-            sed -i -e "s/SERVER1_NAME/${Server1Name}/g" /opt/ioquake3/baseq3/server1.cfg
 
             # Disk space reduction measures
             # Clean yum cache (200MB)
@@ -400,6 +389,17 @@ Resources:
             localedef --list-archive | grep -v -i ^en | xargs localedef --delete-from-archive
             mv /usr/lib/locale/locale-archive /usr/lib/locale/locale-archive.tmpl
             build-locale-archive
+
+            # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
+            aws configure set default.s3.max_concurrent_requests 1
+            aws s3 cp s3://${BucketName}/ /opt/ioquake3/ --exclude baseq3/pak0.pk3 --only-show-errors --recursive
+            aws s3 cp s3://${BucketName}/baseq3/pak0.pk3 /opt/ioquake3/baseq3/pak0.pk3 --only-show-errors
+            chmod +x /opt/ioquake3/ioq3ded.arm64
+            
+            # Patch in server config parameters
+            sed -i -e "s/RCON_PASSWORD/${RconPassword}/g" /opt/ioquake3/baseq3/autoexec.cfg
+            sed -i -e "s/SERVER0_NAME/${Server0Name}/g" /opt/ioquake3/baseq3/server0.cfg
+            sed -i -e "s/SERVER1_NAME/${Server1Name}/g" /opt/ioquake3/baseq3/server1.cfg
 
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0

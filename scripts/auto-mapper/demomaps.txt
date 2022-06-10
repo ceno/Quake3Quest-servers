@@ -1,15 +1,28 @@
 q3dm17            0 4
 q3tourney2        0 4
-jof3dm2           0 4 // playable
-ospdm3            0 4 //
-q3dm7             0 4 // this one only works when bot_minplayers=4
-pom_bots          4 7 // basically perfect
-ktsdm3            4 7 // perfect
+jof3dm2           0 4
+ospdm3            0 4
+zih_roof          0 4
+twq3tourney2      0 4
+storm3tourney6    0 4
+phantq3dm4        0 4
+jul22             0 4
+akutatourney4     0 4
+storm3tourney9    0 4
+rota3tourney1     0 4
+rota3dm2          0 4
+mw3tourney2       0 4
+plduel2           0 4
+kellanger         0 4
+akutatourney5     0 4
+pom_bots          4 7
+ktsdm3            4 7
 q3dm7             4 7
-estatica          4 7 // perfect
-bloodcovenant     4 7 // basically perfect
-bal3dm3           4 7 // perfect
-ospdm2            4 7 // basically perfect
-cpm18r            7 12 // perfect
-ospdm12           7 12 // playable
-pro-bgmp6         7 12 // perfect
+estatica          4 7
+bloodcovenant     4 7
+bal3dm3           4 7
+ospdm2            4 7
+cpm18r            7 12
+ospdm12           7 12
+pro-bgmp6         7 12
+cf                7 12

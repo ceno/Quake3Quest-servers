@@ -1,0 +1,13 @@
+[Unit]
+Description=Concierge for log /mnt/server%i.log
+After=quake3@.service
+
+[Service]
+User=ec2-user
+Type=simple
+ExecStart=/usr/bin/concierge /mnt/server%i.log
+KillMode=control-group
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

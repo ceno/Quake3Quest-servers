@@ -14,7 +14,7 @@ messageForLogfile() {
 }
 
 filterOutBots() {
-  grep --line-buffered -v -E "Orbb|Phobos|Visor|Slash|Tig|Keel|Gorre|TankJr|Razor|Bones|Orbb|Xaero|Sorlag|Stripe|Major|Lucy|Sarge|Hossman|Grunt|Hunter|Klesk|Bitterman|Cadavre|Ranger|Angel|Biker|Daemia|Crash|Angel|Mynx|\^1A\^2n\^3a\^4r\^5k\^6i|Doom|Wrack|Uriel|Patriot|Mandog|<world>"
+  grep --line-buffered -v -E "\"(Orbb|Phobos|Visor|Slash|Tig|Keel|Gorre|TankJr|Razor|Bones|Orbb|Xaero|Sorlag|Stripe|Major|Lucy|Sarge|Hossman|Grunt|Hunter|Klesk|Bitterman|Cadavre|Ranger|Angel|Biker|Daemia|Crash|Angel|Mynx|\^1A\^2n\^3a\^4r\^5k\^6i|Doom|Wrack|Uriel|Patriot|Mandog|<world>)\^7"
 }
 
 player_name_from_enter() {

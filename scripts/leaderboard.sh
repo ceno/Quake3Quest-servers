@@ -3,7 +3,7 @@ TODAY=$(date +"%Y-%m-%d")
 LOG_FILES="$@"
 
 filterOutBots() {
-  grep -v -E "Orbb|Phobos|Visor|Slash|Tig|Keel|Gorre|TankJr|Razor|Bones|Orbb|Xaero|Sorlag|Stripe|Major|Lucy|Sarge|Hossman|Grunt|Hunter|Klesk|Bitterman|Cadavre|Ranger|Angel|Biker|Daemia|Crash|Angel|Mynx|\^1A\^2n\^3a\^4r\^5k\^6i|Doom|Wrack|Uriel|Patriot|Mandog|<world>"
+  grep -v -E "[[:digit:]][[:space:]]*(Orbb|Phobos|Visor|Slash|Tig|Keel|Gorre|TankJr|Razor|Bones|Orbb|Xaero|Sorlag|Stripe|Major|Lucy|Sarge|Hossman|Grunt|Hunter|Klesk|Bitterman|Cadavre|Ranger|Angel|Biker|Daemia|Crash|Angel|Mynx|\^1A\^2n\^3a\^4r\^5k\^6i|Doom|Wrack|Uriel|Patriot|Mandog|<world>)"
 }
 
 grep "$TODAY" $LOG_FILES | grep -o -E "Kill.* killed" | cut -d":" -f3 | sed "s/ killed//g" | sort | uniq -c | sort -nr | filterOutBots > /mnt/"$TODAY"-kills.txt

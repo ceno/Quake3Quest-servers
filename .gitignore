@@ -1,3 +1,4 @@
 .DS_Store
 dist/baseq3/*.pk3
 dist/missionpack/*.pk3
+old-reference

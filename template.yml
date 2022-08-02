@@ -229,18 +229,6 @@ Resources:
 
                 Reference server.cfg
                 - https://github.com/MarioVilas/ioquake3-server-docker/blob/master/q3a/baseq3/server.cfg
-            /opt/ioquake3/baseq3/autoexec.cfg:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/autoexec.cfg'
-            /opt/ioquake3/baseq3/server0.cfg:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/server0.cfg'
-            /opt/ioquake3/baseq3/server1.cfg:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/server1.cfg'
-            /opt/ioquake3/baseq3/stress.cfg:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/stress.cfg'
-            /opt/ioquake3/baseq3/ctf.cfg:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/ctf.cfg'
-            /opt/ioquake3/baseq3/demo.cfg:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/demo.cfg'
             /run/systemd/system/quake3@.service:
               content: !Sub |
                 [Unit]

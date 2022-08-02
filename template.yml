@@ -398,7 +398,7 @@ Resources:
 
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0 && systemctl enable --now concierge@0
-            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now auto-mapper@1 && systemctl enable --now concierge@1
+            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now auto-mapper@1
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

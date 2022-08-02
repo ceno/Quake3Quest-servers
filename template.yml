@@ -302,9 +302,9 @@ Resources:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/demomaps.txt'
             /opt/ioquake3/leaderboard.sh:
               mode: '000755'
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard.sh'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard/leaderboard.sh'
             /etc/cron.d/leaderboard.cron:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard.cron'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard/leaderboard.cron'
             /usr/bin/discord:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/concierge/discord.sh'

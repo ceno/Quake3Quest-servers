@@ -239,7 +239,7 @@ Resources:
                 [Service]
                 User=ec2-user
                 Type=simple
-                ExecStart=/opt/ioquake3/ioq3ded server%i
+                ExecStart=/opt/ioquake3/ioq3ded %i
                 KillMode=control-group
                 Restart=on-failure
 
@@ -273,7 +273,7 @@ Resources:
               mode: '000755'
               content: !Sub |
                 #!/bin/bash
-                /opt/ioquake3/ioq3ded.arm64 +exec $@ 2>&1 >/dev/null | gawk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }; fflush(stdout)' | tee -a /mnt/$1.log
+                /opt/ioquake3/ioq3ded.arm64 +set net_port 2796$1 +exec server$1 2>&1 >/dev/null | gawk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }; fflush(stdout)' | tee -a /mnt/server$1.log
             /usr/bin/icecon:
               mode: '000755'
               source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'

@@ -27,8 +27,6 @@ if [[ -z "$MAPLIST" || -z "$LOGFILE" || -z "$STATE_FILE" || -z "$RCON_PASSWORD" 
   exit 1
 fi
 
-exit 0
-
 #### Load map data
 SMALL_THRESHOLD=4
 MEDIUM_THRESHOLD=7

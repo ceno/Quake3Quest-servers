@@ -305,6 +305,11 @@ Resources:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard/leaderboard.sh'
             /etc/cron.d/leaderboard.cron:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard/leaderboard.cron'
+            /opt/ioquake3/status.sh:
+              mode: '000755'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/stats/status.sh'
+            /etc/cron.d/status.cron:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/stats/stats.cron'
             /usr/bin/discord:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/concierge/discord.sh'

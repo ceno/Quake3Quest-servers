@@ -71,6 +71,33 @@ aws_access_key_id=xxxxxxxxxxxxx
 aws_secret_access_key=xxxxxxxxxxxxxxxxxxx
 ```
 
+### S3 backend
+
+This project provides functionality to deploy/sync the S3 bucket in the stack
+that holds the quake3 application itself. It expects the `dist` directory at
+the root of the repo to have been populated with the missing pk3s and whatever
+extra maps the server is running. The file tree should look like this
+
+```
+.
+├── baseq3
+│   ├── pak0.pk3
+│   ├── pak1.pk3
+│   ├── pak2.pk3
+│   ├── pak3.pk3
+│   ├── pak4.pk3
+│   ├── pak5.pk3
+│   ├── pak6.pk3
+│   ├── pak7.pk3
+│   ├── pak8.pk3
+├── ioq3ded.arm64
+├── ioq3ded.x86_64
+└── missionpack
+    ├── pak1.pk3
+    ├── pak2.pk3
+    └── pak3.pk3
+```
+
 ## Deploying a new region
 
 Add new region to `./scripts/bootstrap.sh` and edit the `bootstrap` target in the Makefile. Then

@@ -61,6 +61,16 @@ basically holds secrets which will then be passed as parameters to
 }
 ```
 
+This project also expects aws authentication to be set up and working as
+default. A basic way to do it is with static credentials in
+`~/.aws/credentials`
+
+```
+[default]
+aws_access_key_id=xxxxxxxxxxxxx
+aws_secret_access_key=xxxxxxxxxxxxxxxxxxx
+```
+
 ## Deploying a new region
 
 Add new region to `./scripts/bootstrap.sh` and edit the `bootstrap` target in the Makefile. Then

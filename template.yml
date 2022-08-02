@@ -257,36 +257,6 @@ Resources:
 
                 [Install]
                 WantedBy=multi-user.target
-            /run/systemd/system/auto-mapper@.service:
-              content: !Sub |
-                [Unit]
-                Description=Auto-mapper on port 2796%i
-                After=quake3@.service
-
-                [Service]
-                User=ec2-user
-                Type=simple
-                ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/ffamaps.txt "${RconPassword}" 2796%i
-                KillMode=control-group
-                Restart=on-failure
-
-                [Install]
-                WantedBy=multi-user.target
-            /run/systemd/system/demo-mapper@.service:
-              content: !Sub |
-                [Unit]
-                Description=Auto-mapper set to run demo maps on port 2796%i
-                After=quake3@.service
-
-                [Service]
-                User=ec2-user
-                Type=simple
-                ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/demomaps.txt "${RconPassword}" 2796%i
-                KillMode=control-group
-                Restart=on-failure
-
-                [Install]
-                WantedBy=multi-user.target
             /etc/systemd/journald.conf:
               content: !Sub |
                 [Journal]
@@ -319,6 +289,13 @@ Resources:
             /usr/bin/icecon:
               mode: '000755'
               source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
+            /usr/bin/auto-mapper:
+              mode: '000755'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'
+            /run/systemd/system/auto-mapper@.service:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper@.service'
+            /etc/auto-mapper.conf:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper.conf'
             /opt/ioquake3/ffamaps.txt:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/ffamapsv3.txt'
             /opt/ioquake3/demomaps.txt:
@@ -328,9 +305,6 @@ Resources:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard.sh'
             /etc/cron.d/leaderboard.cron:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/leaderboard.cron'
-            /usr/bin/auto-mapper:
-              mode: '000755'
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'
             /usr/bin/discord:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/concierge/discord.sh'
@@ -419,9 +393,12 @@ Resources:
             ESCAPED_REPLACE=$(printf '%s\n' "${WebhookUrl}" | sed -e 's/[\/&]/\\&/g')
             sed -i -e "s/WEBHOOK_URL/$ESCAPED_REPLACE/g" /etc/concierge.conf
 
+            # Patch in auto-mapper parameters
+            sed -i -e "s/RCON_PASSWORD_CHANGE_ME/${RconPassword}/g" /etc/auto-mapper.conf
+
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0 && systemctl enable --now concierge@0
-            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now demo-mapper@1 && systemctl enable --now concierge@1
+            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now auto-mapper@1 && systemctl enable --now concierge@1
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

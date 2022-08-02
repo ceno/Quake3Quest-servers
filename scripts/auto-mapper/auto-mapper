@@ -1,15 +1,33 @@
 #!/bin/bash
-LOGFILE="$1"
-MAPLIST="$2"
-RCON_PASSWORD="$3"
-SERVER_PORT="$4"
-STATE_FILE="/tmp/state-$4.txt"
-RCON_TIMEOUT=1
+
+lookupValueInConfFile() {
+  grep "$1:$2" /etc/auto-mapper.conf | cut -d"=" -f2
+}
 
 rcon () {
+  RCON_TIMEOUT=1
   RCON_CMD="$1"
   (printf "\xFF\xFF\xFF\xFFrcon $RCON_PASSWORD $RCON_CMD"; sleep $RCON_TIMEOUT) | nc -u -w1 127.0.0.1 $SERVER_PORT
 }
+
+#### Load config
+SERVER_PORT="$1"
+MAPLIST=$(lookupValueInConfFile "$SERVER_PORT" "mapfile")
+LOGFILE=$(lookupValueInConfFile "$SERVER_PORT" "logfile") 
+STATE_FILE=$(lookupValueInConfFile "$SERVER_PORT" "statefile") 
+RCON_PASSWORD=$(lookupValueInConfFile "$SERVER_PORT" "rconpassword")
+
+echo $SERVER_PORT
+echo $MAPLIST
+echo $LOGFILE
+echo $STATE_FILE
+echo $RCON_PASSWORD
+if [[ -z "$MAPLIST" || -z "$LOGFILE" || -z "$STATE_FILE" || -z "$RCON_PASSWORD" ]]; then
+  echo 'one or more variables are undefined'
+  exit 1
+fi
+
+exit 0
 
 #### Load map data
 SMALL_THRESHOLD=4

@@ -1,7 +1,6 @@
 all: build
 
 build:
-	nvm use
 	npm install
 	npx aws-cdk synth --app "npx ts-node bin/cdk.ts"  --all
 

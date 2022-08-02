@@ -1,6 +1,7 @@
 # CDK
 
-This CDK project is used to deploy the template in the root level.
+This CDK project is used to deploy the template in the root level across
+multiple regions and provides tooling to facilitate managing them.
 
 Basically evolved out of a basic project produced by `cdk init`
 
@@ -9,7 +10,7 @@ Basically evolved out of a basic project produced by `cdk init`
 
 ### Dependencies
 
-This project only requires `node v16.14.2` to be installed and uses `nvm` to manage version (see Makefile).
+This project only requires `node v16.14.2` to be installed. Recommend using `nvm` to manage version.
 All the cdk and typescript stuff is installed in runtime, as every cdk call is wrapped with `npx`
 
 ### Config

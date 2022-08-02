@@ -43,6 +43,10 @@ Parameters:
     Type: 'String'
     Description: >-
       OPTIONAL: Password for the prowl notification service (https://www.prowlapp.com/), which sends push notifications to iOS devices. May be left empty and the functionality will be skipped entirely
+  WebhookUrl:
+    Type: 'String'
+    Description: >-
+      Discord webhook used by the concierge service to post announcement messages
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -316,7 +320,7 @@ Resources:
               mode: '000755'
               source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
             /opt/ioquake3/ffamaps.txt:
-              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/ffamaps.txt'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/ffamapsv3.txt'
             /opt/ioquake3/demomaps.txt:
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/demomaps.txt'
             /opt/ioquake3/leaderboard.sh:
@@ -327,6 +331,16 @@ Resources:
             /usr/bin/auto-mapper:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'
+            /usr/bin/discord:
+              mode: '000755'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/concierge/discord.sh'
+            /usr/bin/concierge:
+              mode: '000755'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/concierge/concierge.sh'
+            /run/systemd/system/concierge@.service:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/concierge/concierge@.service'
+            /etc/concierge.conf:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/concierge/concierge.conf'
     Properties:
       LaunchTemplateData: 
         KeyName: !Ref KeyName
@@ -401,9 +415,13 @@ Resources:
             sed -i -e "s/SERVER0_NAME/${Server0Name}/g" /opt/ioquake3/baseq3/server0.cfg
             sed -i -e "s/SERVER1_NAME/${Server1Name}/g" /opt/ioquake3/baseq3/server1.cfg
 
+            # Patch in concierge parameters (with special characters escaped, see https://stackoverflow.com/a/2705678)
+            ESCAPED_REPLACE=$(printf '%s\n' "${WebhookUrl}" | sed -e 's/[\/&]/\\&/g')
+            sed -i -e "s/WEBHOOK_URL/$ESCAPED_REPLACE/g" /etc/concierge.conf
+
             # Start quake3 servers if a name for them has been passed in the params
-            [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0
-            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now demo-mapper@1
+            [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0 && systemctl enable --now concierge@0
+            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now demo-mapper@1 && systemctl enable --now concierge@1
 Outputs:
   ElasticIp:
     Value: !Ref ElasticIp

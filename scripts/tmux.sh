@@ -33,25 +33,6 @@ tmux new-session -s 'quake3' \; \
   split-window -h \; \
   send-keys 'printf '"'"'\033]2;Master server\033\\'"'"' ' C-m \; \
   send-keys "ssh ec2-user@${MASTER}" C-m \; \
-  new-window -n 'rcon AU&AF' \; \
-  send-keys 'printf '"'"'\033]2;SSH AU\033\\'"'"' ' C-m \; \
-  send-keys "ssh ec2-user@${SYDNEY}" C-m \; \
-  split-window -v \; \
-  send-keys 'printf '"'"'\033]2;SSH AF\033\\'"'"' ' C-m \; \
-  send-keys "ssh ec2-user@${CAPETOWN}" C-m \; \
-  split-window -h \; \
-  send-keys 'printf '"'"'\033]2;RCON AF 0\033\\'"'"' ' C-m \; \
-  send-keys "ssh ec2-user@${CAPETOWN} icecon 127.0.0.1:27960 \"${RCON_PASSWORD}\"" C-m \; \
-  split-window -h \; \
-  send-keys 'printf '"'"'\033]2;RCON AF 1\033\\'"'"' ' C-m \; \
-  send-keys "ssh ec2-user@${CAPETOWN} icecon 127.0.0.1:27961 \"${RCON_PASSWORD}\"" C-m \; \
-  select-pane -t 0 \; \
-  split-window -h \; \
-  send-keys 'printf '"'"'\033]2;RCON AU 0\033\\'"'"' ' C-m \; \
-  send-keys "ssh ec2-user@${SYDNEY} icecon 127.0.0.1:27960 \"${RCON_PASSWORD}\"" C-m \; \
-  split-window -h \; \
-  send-keys 'printf '"'"'\033]2;RCON AU 1\033\\'"'"' ' C-m \; \
-  send-keys "ssh ec2-user@${SYDNEY} icecon 127.0.0.1:27961 \"${RCON_PASSWORD}\"" C-m \; \
   new-window -n 'rcon US&UK' \; \
   send-keys 'printf '"'"'\033]2;SSH EU\033\\'"'"' ' C-m \; \
   send-keys "ssh ec2-user@${PARIS}" C-m \; \

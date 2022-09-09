@@ -1,0 +1,2 @@
+#!/bin/bash
+/opt/ioquake3/ioq3ded.arm64 +set net_port 2796$1 +exec server$1 2>&1 >/dev/null | gawk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }; fflush(stdout)' | tee -a /mnt/server$1.log

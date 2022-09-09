@@ -14,14 +14,14 @@ new CdkStack(app, 'Quake3Quest-GameServer-California', {
   webhookParam: 'WEBHOOK_URL_US'
 });
 
-
+/* Other regions, now offline
 new CdkStack(app, 'Quake3Quest-GameServer-Sydney', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'ap-southeast-2' },
   server0Name: '',
   server1Name: 'SYDNEY DEMO'
 });
 
-/* Other regions, now offline
+
 new CdkStack(app, 'Quake3Quest-GameServer-Virginia', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' },
   server0Name: 'VIRGINIA FULL GAME',

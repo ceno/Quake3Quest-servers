@@ -172,7 +172,6 @@ Resources:
             Version: !GetAtt LaunchTemplate.LatestVersionNumber
           Overrides:
             - InstanceType: t4g.nano
-            - InstanceType: t4g.micro
       Tags:
         - Key: Name
           Value: Quake3Quest

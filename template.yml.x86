@@ -1,0 +1,356 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ioquake3 server on port 27960
+Parameters:
+  AmiAlias:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-x86_64-ebs
+    Description: >-
+      The actual AMI id ami-xxxxx will be dereferenced based on this alias.
+      Default is "Amazon Linux 2 minimal HVM"
+  VpcId:
+    Type: 'AWS::EC2::VPC::Id'
+    Description: >-
+      VpcId of your Virtual Private Cloud.  You probably just have one default
+      VPC.  Choose it here.
+    ConstraintDescription: Must be the VPC Id of an existing Virtual Private Cloud.
+  Subnets:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Description: Choose a subnet for the instance.
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: >-
+      Choose a Key Pair for this instance.  If you do not have one, go make one
+      in the EC2 section and it will appear here.
+  BucketName:
+    Type: 'String'
+    Description: >-
+      Bucket to hold all the pak files etc. Put region in the name, as a reminder
+      that cross region transfer costs do apply so a bucket per region is most
+      cost effective.
+  Server0Name:
+    Type: 'String'
+    Description: >-
+      Hostname for server on port 27960. Only the first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
+  Server1Name:
+    Type: 'String'
+    Description: >-
+      Hostname for server on port 27961. Only the first 20 chars show up in the quake3 UI. OPTIONAL - leaving it empty will not start the server
+  RconPassword:
+    Type: 'String'
+    Description: >-
+      Password to access server using RCON
+  ProwlApiToken:
+    Type: 'String'
+    Description: >-
+      OPTIONAL: Password for the prowl notification service (https://www.prowlapp.com/), which sends push notifications to iOS devices. May be left empty and the functionality will be skipped entirely
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: >-
+        Security Group that allows access to SSH connections and the quake3 server
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp:  0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 27960
+          ToPort: 27962
+          CidrIp:  0.0.0.0/0
+  ElasticIp:
+    Type: AWS::EC2::EIP
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Path: /
+      Roles: 
+       - !Ref Ec2InstanceRole
+  Ec2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+  InstanceS3Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${BucketName}-list-and-get-objects
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:ListBucket
+            Resource:
+              - !Sub arn:aws:s3:::${BucketName}/*
+              - !Sub arn:aws:s3:::${BucketName}
+      Roles:
+        -
+          !Ref Ec2InstanceRole
+  InstanceEIpPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: allocate-elastic-ips
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - ec2:DescribeAddresses
+              - ec2:AllocateAddress
+              - ec2:DescribeInstances
+              - ec2:AssociateAddress
+            Resource: '*'
+      Roles:
+        -
+          !Ref Ec2InstanceRole
+
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+        - Key: Name
+          Value: Quake3Quest
+  FileSystemSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that allows NFS access from the teamcity server
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref InstanceSecurityGroup
+  FileSystemMountTarget0:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SecurityGroups:
+        - !Ref FileSystemSecurityGroup
+      SubnetId: !Select [0, Ref: Subnets]
+
+  AutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier: !Ref Subnets
+      DesiredCapacity: 1
+      MinSize: 0
+      MaxSize: 1
+      MixedInstancesPolicy:
+        InstancesDistribution:
+          OnDemandBaseCapacity: 0
+          OnDemandPercentageAboveBaseCapacity: 0
+          SpotAllocationStrategy: lowest-price
+          # This allows up to 6 instance types across 3 AZs (3*6=18)
+          SpotInstancePools: 20
+        LaunchTemplate:
+          LaunchTemplateSpecification: 
+            LaunchTemplateId: !Ref LaunchTemplate
+            Version: !GetAtt LaunchTemplate.LatestVersionNumber
+          Overrides:
+            - InstanceType: t3.nano
+            - InstanceType: t3.micro
+      Tags:
+        - Key: Name
+          Value: Quake3Quest
+          PropagateAtLaunch: "true"
+  LaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files :
+            /home/ec2-user/README.md:
+              content: !Sub |
+                Useful commands:
+
+                sudo less /var/log/cloud-init-output.log
+                sudo tail -f /var/log/cloud-init-output.log
+
+                cat /run/systemd/system/quake3@.service
+                systemctl status quake3@0
+                journalctl -f -u quake3@0
+
+                Config files:
+                cat /opt/ioquake3/baseq3/autoexec.cfg
+                cat /opt/ioquake3/baseq3/server0.cfg
+                cat /opt/ioquake3/baseq3/server1.cfg
+                cat /opt/ioquake3/baseq3/ctf.cfg
+                cat /opt/ioquake3/baseq3/demo.cfg
+
+                RCON:
+                icecon 127.0.0.1:27960 "${RconPassword}"
+                ssh ec2-user@${ElasticIp} icecon 127.0.0.1:27960 "${RconPassword}"
+
+                Quake rcon commands:
+                status
+                exec ctf.cfg
+                addbot sarge 4 //that last number is the skill level [1-5]. e.g. doom, bones, slash, orbb, keel
+                kick 2         //see status for number for each player
+                kickbots       //kicks all bots
+                vstr d1        //begin map rotation starting with d1 to d19
+                map q3dm17
+                map_restart
+                timelimit 5
+                fraglimit 20
+                set bot_minplayers 3 //fills gamer list up to this number with bots
+
+                Map list
+                - http://www.bosskey.net/q3a/maps/standard.html
+
+                Official ioquake3 admin guide
+                - https://ioquake3.org/help/sys-admin-guide/#rcon
+
+                Reference server.cfg
+                - https://github.com/MarioVilas/ioquake3-server-docker/blob/master/q3a/baseq3/server.cfg
+            /opt/ioquake3/baseq3/autoexec.cfg:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/autoexec.cfg'
+            /opt/ioquake3/baseq3/server0.cfg:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/server0.cfg'
+            /opt/ioquake3/baseq3/server1.cfg:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/server1.cfg'
+            /opt/ioquake3/baseq3/stress.cfg:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/stress.cfg'
+            /opt/ioquake3/baseq3/ctf.cfg:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/ctf.cfg'
+            /opt/ioquake3/baseq3/demo.cfg:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/baseq3/demo.cfg'
+            /run/systemd/system/quake3@.service:
+              content: !Sub |
+                [Unit]
+                Description=Quake3@%i
+                After=network.target
+                RequiresMountsFor=/mnt
+                
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/opt/ioquake3/ioq3ded server%i
+                KillMode=control-group
+                Restart=on-failure
+
+                [Install]
+                WantedBy=multi-user.target
+            /run/systemd/system/auto-mapper@.service:
+              content: !Sub |
+                [Unit]
+                Description=Auto-mapper on port 2796%i
+                After=quake3@.service
+
+                [Service]
+                User=ec2-user
+                Type=simple
+                ExecStart=/usr/bin/auto-mapper /mnt/server%i.log /opt/ioquake3/ffamaps.txt "${RconPassword}" 2796%i
+                KillMode=control-group
+                Restart=on-failure
+
+                [Install]
+                WantedBy=multi-user.target
+            /etc/systemd/journald.conf:
+              content: !Sub |
+                [Journal]
+                SystemMaxUse=50M
+            /opt/ioquake3/ioq3ded:
+              mode: '000755'
+              content: !Sub |
+                #!/bin/bash
+                /opt/ioquake3/ioq3ded.x86_64 +exec $@ 2>&1 >/dev/null | gawk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }; fflush(stdout)' | tee -a /mnt/$1.log
+            /usr/bin/icecon:
+              mode: '000755'
+              source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
+            /opt/ioquake3/ffamaps.txt:
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/ffamaps.txt'
+            /usr/bin/auto-mapper:
+              mode: '000755'
+              source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'
+    Properties:
+      LaunchTemplateData: 
+        KeyName: !Ref KeyName
+        IamInstanceProfile:
+          Name: !Ref InstanceProfile
+        ImageId: !Ref AmiAlias
+        SecurityGroupIds:
+          - !Ref InstanceSecurityGroup
+        # This is meant to be overridden by the ASG
+        InstanceType: t4g.nano
+        # The option below is really important! It specifies the behaviour when the instance runs out of CPU credits
+        CreditSpecification:
+          CpuCredits: unlimited
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeType: gp3
+              VolumeSize: 2
+              DeleteOnTermination: true
+              Encrypted: false
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            # iOS push notification functionality
+            trap 'error $? $LINENO' ERR
+            trap 'success' EXIT
+            error() {
+              [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Error!" -F description="${Server0Name} has failed to boot. Error $1 occurred on line $2"
+            }
+            success() {
+              [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready" -F description="${Server0Name} `systemctl status quake3@0 | head -n1` `systemctl status quake3@0 | grep Active`"
+              [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Ready" -F description="${Server1Name} `systemctl status quake3@1 | head -n1` `systemctl status quake3@1 | grep Active`"
+            }
+            [ "${ProwlApiToken}" != "" ] && curl -k https://api.prowlapp.com/publicapi/add -F apikey=${ProwlApiToken} -F application="Quake3Quest" -F event="Boot" -F description="${Server0Name} `curl -s http://169.254.169.254/latest/meta-data/instance-type`/${AWS::Region}/${ElasticIp}:27960"
+
+            # Begin actual OS initialisation
+            yum install -y vim htop wget nmap-ncat unzip amazon-efs-utils aws-cli aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -s ${AWS::StackId} -r LaunchTemplate --region ${AWS::Region} || exit 1
+
+            # Clean yum to free up 200MB of disk space
+            yum clean all
+            rm -rf /var/cache/yum
+
+            # Associate elastic IP manually to avoid the need for a load balancer
+            aws configure set region ${AWS::Region}
+            aws ec2 associate-address --instance-id `curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id  `aws ec2 describe-addresses --public-ips ${ElasticIp} --query 'Addresses[0].AllocationId' --output text`
+
+            # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
+            aws configure set default.s3.max_concurrent_requests 1
+            aws s3 cp s3://${BucketName}/ /opt/ioquake3/ --exclude baseq3/pak0.pk3 --only-show-errors --recursive
+            aws s3 cp s3://${BucketName}/baseq3/pak0.pk3 /opt/ioquake3/baseq3/pak0.pk3 --only-show-errors
+            chmod +x /opt/ioquake3/ioq3ded.x86_64
+
+            # Restart journald so it picks up the 50M limit for log size
+            systemctl restart systemd-journald
+
+            # Mount EFS to keep logs
+            mount -t efs ${FileSystem} /mnt
+            chown -R ec2-user:ec2-user /mnt
+
+            # Patch in server config parameters
+            sed -i -e "s/RCON_PASSWORD/${RconPassword}/g" /opt/ioquake3/baseq3/autoexec.cfg
+            sed -i -e "s/SERVER0_NAME/${Server0Name}/g" /opt/ioquake3/baseq3/server0.cfg
+            sed -i -e "s/SERVER1_NAME/${Server1Name}/g" /opt/ioquake3/baseq3/server1.cfg
+
+            # Start quake3 servers if a name for them has been passed in the params
+            [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0
+            [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now auto-mapper@1
+Outputs:
+  ElasticIp:
+    Value: !Ref ElasticIp
+    Description: The elastic IP to be associated with the instance

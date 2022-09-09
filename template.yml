@@ -271,7 +271,7 @@ Resources:
                 }
             /usr/bin/icecon:
               mode: '000755'
-              source: 'https://github.com/icedream/icecon/releases/download/v1.0.0/icecon_linux_arm'
+              source: 'https://github.com/ceno/icecon/releases/download/v1.0.0/icecon_linux_arm'
             /usr/bin/auto-mapper:
               mode: '000755'
               source: 'https://github.com/ceno/Quake3Quest-servers/raw/main/scripts/auto-mapper/auto-mapper'

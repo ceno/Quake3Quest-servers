@@ -361,9 +361,10 @@ Resources:
             rm /etc/update-motd.d/70-available-updates
             # Remove unused locales (100MB)
             # https://unix.stackexchange.com/questions/90006/how-do-i-reduce-the-size-of-locale-archive
-            localedef --list-archive | grep -v -i ^en | xargs localedef --delete-from-archive
-            mv /usr/lib/locale/locale-archive /usr/lib/locale/locale-archive.tmpl
-            build-locale-archive
+            # TODO: this used to work but now fails with `build-locale-archive: cannot read archive header`
+            #localedef --list-archive | grep -v -i ^en | xargs localedef --delete-from-archive
+            #mv /usr/lib/locale/locale-archive /usr/lib/locale/locale-archive.tmpl
+            #build-locale-archive
 
             # Download ioquake3 from s3, but do pak0 separately to increase likelihood of it not flaking out
             aws configure set default.s3.max_concurrent_requests 1

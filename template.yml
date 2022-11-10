@@ -385,6 +385,14 @@ Resources:
             # Patch in auto-mapper parameters
             sed -i -e "s/RCON_PASSWORD_CHANGE_ME/${RconPassword}/g" /etc/auto-mapper.conf
 
+            # These packages are actually useful to have around,
+            # but aws-cli is on python2.7 for some unholy reason
+            # and something somewhere has changed, and the system
+            # no longer has enough diskspace to handle regular operation
+            # and this is an easy way to get rid of 150M
+            yum remove aws-cli aws-cfn-bootstrap -y
+            yum autoremove -y
+
             # Start quake3 servers if a name for them has been passed in the params
             [ "${Server0Name}" != "" ] && systemctl enable --now quake3@0 && systemctl enable --now auto-mapper@0 && systemctl enable --now concierge@0
             [ "${Server1Name}" != "" ] && systemctl enable --now quake3@1 && systemctl enable --now auto-mapper@1

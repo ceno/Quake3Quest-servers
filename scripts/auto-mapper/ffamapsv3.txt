@@ -52,7 +52,6 @@ fff               4 7    // https://ws.q3df.org/map/fff
 ktsdm3            4 7    // https://ws.q3df.org/map/ktsdm3
 ospdm1            4 7    // https://ws.q3df.org/map/ospdm1
 auh3dm1           4 7    // https://ws.q3df.org/map/auh3dm1
-estatica          4 7    // https://ws.q3df.org/map/estatica
 q3dm8             4 7    // https://ws.q3df.org/map/q3dm8
 overkill          4 7    // https://ws.q3df.org/map/overkill
 bal3dm3           4 7    // https://ws.q3df.org/map/bal3dm3
